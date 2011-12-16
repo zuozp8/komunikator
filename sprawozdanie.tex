@@ -1,0 +1,88 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage{fullpage}
+\usepackage{polski}
+\usepackage[utf8x]{inputenc}
+\usepackage{ucs}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\newcommand{\kod}[1]{\textbf{\small{KOD: #1}}}
+
+\author{Konrad Baumgart, Jan Borowski}
+\title{Projekt SK}
+
+\begin{document}
+
+\maketitle
+
+\section{Treść zadania}
+	Projekt 4: Komunikator internetowy typu GG
+
+\section{Protokół sieciowy}
+	Każdy klient identyfikowany jest przez swój 2-bajtowy dodatni numer ID, używa swojego hasła do logowania.\\
+	Statujs ujżytkownika identyfikowany jest przez 1-bajtowy numer:
+	\begin{enumerate} 
+		\itemsep0pt \parskip0pt \parsep0pt
+		\setcounter{enumi}{-1}
+		\item niedostępny
+		\item niewidoczny\footnote{Niewidoczni użytkownicy są widziani jako
+			niedostępni przez innych podczas sprawdzania dostępności.}
+		\item zajęty
+		\item dostępny
+	\end{enumerate}
+	
+	\paragraph{Logi}
+		Serwer wypisuje dane diagnostyczne na standardowe wyjście błędów.
+	\paragraph{Zapewnienie odczytu pełnych paczek z danymi}
+		Za każdym razem zarówno serwer jak i klient poprzedza przesyłane dane
+		informacją o ich długości (w bajtach) zawartą w 4 bajtach. Ogranicza to na przykład maksymalną
+		długość wiadomości w systemie.\\
+		Pierwszą częścią danych jest zawsze kod operacji o długości 1 bajta.
+	\paragraph{Postępowanie w przypadku otrzymania nieprawidłowych danych}
+		Gdy serwer otrzyma od klienta dane niezgodne z niniejszą specyfikacją, rozłącza danego klienta.
+	\paragraph{Port serwera} Serwer nasłuchuje pakietów TCP na porcie 4790.
+	\paragraph{Łączenie} Nawiązując połączenie z serwerem klient może albo się zarejestrować, albo zalogować.
+	\paragraph{Rejestracja}\kod{1}\\
+		Można się rejestrować jedynie tuż po nawiązaniu połączenia.
+		Klient przesyła swoje hasło zakończone \textbackslash{}0.
+		Serwer odpowiada \kod{1} wysyłając 2 bajty: numer ID w przypadku sukcesu lub 0 w przypadku błędu,
+		następnie rozłącza się.
+	\paragraph{Logowanie}\kod{2}\\
+		Klient wysyła swoje ID (2 bajty) do serwera, swój status (1 bajt), po nim zaś swoje hasło zakończone \textbackslash{}0.
+		Serwer odpowiada \kod{2} wysyłając 1 bajt: 1 w przypadku sukcesu lub 0 w przypadku błędu.\\
+		Nie można ustawić statusu na niedostępny.
+	\paragraph{Zakończenie połączenia} Zarówno klient jak i serwer mogą zakończyć połączenie po prostu
+		kończąc połączenie TCP.
+	
+	\paragraph{} \textbf{Poniższe komendy można wykonać tylko będąc zalogowanym.}
+	\paragraph{Sprawdzenie dostępności znajomych}\kod{3}\\
+		Klient wysyła kilka ID (2-bajtowe, jedno po drugim) do serwera.
+		Serwer odpowiada \kod{3} wysyłając wielokrotność 3 bajtów: dla każdego ID o które wystosowano zapytanie
+		2 bajty zajmuje to ID, zaś w trzecim bajcie jest kod dostępności danego użytkownika.\\
+		Można sprawdzić dostępność samego siebie.
+	\paragraph{Zmiana statusu}\kod{4}\\
+		Klient wysyła nowy status (1 bajt).
+		Serwer odpowiada \kod{4} wysyłając 1 bajt:1 w przypadku sukcesu lub 0 w przypadku błędu.\\
+		Nie można zmienić statusu na niedostępny.
+	\paragraph{Wysłanie wiadomości}\kod{5}\\
+		Klient wysyła nieujemną ilość osób $n$ (1 bajt) do których wysyła wiadomość. Następnie wysyła $2n$ bajtów -
+		ID odbiorców.\\
+		Serwer nie informauje nadawce o powodzeniu operacji.\\
+		Serwer wysyła \kod{5} do odbiorców nieujemną ilość osób $n$ (1 bajt) do których wysyłana jest wiadomość.
+		Następnie wysyła $2$ bajty - ID nadawcy, oraz $2(n-1)$ bajtów - ID innych odbiorców.\\
+		Dzieki temu klient wie, że wiadomość wysłana jest w konferencji.
+\section{Realizacja}
+	Stworzyliśmy serwer używając poznanych na zajęciach socketów BSD używając języka C++.\\
+	Klienta stworzyliśmy w języku Java, gdyż byliśmy w stanie potem uruchamić go w środowisku
+	Linux oraz Windows, a także na urządzeniu mobilnym z systemem Android.
+\section{Obsługa programu}
+	\subsection{Serwer}
+		Skompilowany przy (użyciu programu make) serwer uruchamia się w konsoli.
+		Po uruchomieniu można obserwować wyjście diagnostyczne na standardowym wyjściu błędów.
+		By łagodnie wyłączyc serwer wystarczy wysłać doń SIGUSR1.
+	\subsection{Klient}
+		Klient uruchamiany jest na maszynie wirtualnej Java.
+		Intuicyjny graficzny interfejs użytkownika pozwala zarejestrować się, zalogować i kożystać z komunikatora.
+
+\end{document}
