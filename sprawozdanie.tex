@@ -21,16 +21,7 @@
 
 \section{Protokół sieciowy}
 	Każdy klient identyfikowany jest przez swój 2-bajtowy dodatni numer ID, używa swojego hasła do logowania.\\
-	Statujs ujżytkownika identyfikowany jest przez 1-bajtowy numer:
-	\begin{enumerate} 
-		\itemsep0pt \parskip0pt \parsep0pt
-		\setcounter{enumi}{-1}
-		\item niedostępny
-		\item niewidoczny\footnote{Niewidoczni użytkownicy są widziani jako
-			niedostępni przez innych podczas sprawdzania dostępności.}
-		\item zajęty
-		\item dostępny
-	\end{enumerate}
+	Użytkownik ma tylko 2 statusy: zalogowany i niezalogowany.
 	
 	\paragraph{Logi}
 		Serwer wypisuje dane diagnostyczne na standardowe wyjście błędów.
@@ -49,9 +40,8 @@
 		Serwer odpowiada \kod{1} wysyłając 2 bajty: numer ID w przypadku sukcesu lub 0 w przypadku błędu,
 		następnie rozłącza się.
 	\paragraph{Logowanie}\kod{2}\\
-		Klient wysyła swoje ID (2 bajty) do serwera, swój status (1 bajt), po nim zaś swoje hasło zakończone \textbackslash{}0.
+		Klient wysyła swoje ID (2 bajty) do serwera, po nim zaś swoje hasło zakończone \textbackslash{}0.
 		Serwer odpowiada \kod{2} wysyłając 1 bajt: 1 w przypadku sukcesu lub 0 w przypadku błędu.\\
-		Nie można ustawić statusu na niedostępny.
 	\paragraph{Zakończenie połączenia} Zarówno klient jak i serwer mogą zakończyć połączenie po prostu
 		kończąc połączenie TCP.
 	
@@ -61,21 +51,26 @@
 		Serwer odpowiada \kod{3} wysyłając wielokrotność 3 bajtów: dla każdego ID o które wystosowano zapytanie
 		2 bajty zajmuje to ID, zaś w trzecim bajcie jest kod dostępności danego użytkownika.\\
 		Można sprawdzić dostępność samego siebie.
-	\paragraph{Zmiana statusu}\kod{4}\\
-		Klient wysyła nowy status (1 bajt).
-		Serwer odpowiada \kod{4} wysyłając 1 bajt:1 w przypadku sukcesu lub 0 w przypadku błędu.\\
-		Nie można zmienić statusu na niedostępny.
 	\paragraph{Wysłanie wiadomości}\kod{5}\\
 		Klient wysyła nieujemną ilość osób $n$ (1 bajt) do których wysyła wiadomość. Następnie wysyła $2n$ bajtów -
 		ID odbiorców.\\
-		Serwer nie informauje nadawce o powodzeniu operacji.\\
+		Serwer nie informauje nadawce o powodzeniu operacji wysłania.\\
 		Serwer wysyła \kod{5} do odbiorców nieujemną ilość osób $n$ (1 bajt) do których wysyłana jest wiadomość.
 		Następnie wysyła $2$ bajty - ID nadawcy, oraz $2(n-1)$ bajtów - ID innych odbiorców.\\
-		Dzieki temu klient wie, że wiadomość wysłana jest w konferencji.
+		Dzieki temu klient wie, że wiadomość wysłana jest w konferencji.\\
+		Jeżeli odbiorca jest niezalogowany, wiadomości do niego są przechowywane na serwerze
+		i są mu przesyłane w momencie gdy się zaloguje.
 \section{Realizacja}
-	Stworzyliśmy serwer używając poznanych na zajęciach socketów BSD używając języka C++.\\
-	Klienta stworzyliśmy w języku Java, gdyż byliśmy w stanie potem uruchamić go w środowisku
-	Linux oraz Windows, a także na urządzeniu mobilnym z systemem Android.
+	\paragraph{Serwer}Stworzyliśmy serwer używając poznanych na zajęciach socketów BSD używając języka C++.
+	By przechowywać dane o użytkownikach, używamy dynamicznych kontenerów z STL.
+	Kod serwera jest krótki, więc pozwoliliśmy sobie go zamknąć w pojedynczym pliku \textit{main.cpp}.
+	\begin{quote}
+		\textit{Code is the ultimate documentation.}
+	\end{quote}
+	
+	\paragraph{Klient}Klienta stworzyliśmy w języku Java, gdyż byliśmy w stanie potem uruchamić go w środowisku
+	Linux oraz Windows, a także stworzyć wersję dla urządzenia mobilnego z systemem Android.
+	
 \section{Obsługa programu}
 	\subsection{Serwer}
 		Skompilowany przy (użyciu programu make) serwer uruchamia się w konsoli.
