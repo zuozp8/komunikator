@@ -87,9 +87,23 @@ int makeSocket() {
 }
 
 /**
+ * Login or register
+ * @return If user logged in
+ */
+bool login(int fd) {
+	char buf[1600];
+	read(fd,*buf, 2);//Read length
+	int length = *(short*(buf)); //First 2 bytes of buf contain the length
+	int readed = 0;
+	while(readed < length) {
+		readed += read(fd,*buf, length-readed);
+	}
+	//FOO
+}
+/**
  * Communication between server and client
  */
-void talkWithClient() {
+void talkWithClient(int fd) {
 	
 }
 
@@ -117,8 +131,8 @@ int main(int argc, char* argv[]) {
 		if (! fork()) {
 			//We're child
 			cerr<<argv[0]<<": [connection from "<<inet_ntoa((in_addr)stClientAddr.sin_addr)<<"]\n";
-			if (login()) {
-				talkWithClient();
+			if (login(nClientSocket)) {
+				talkWithClient(nClientSocket);
 			}
 			exit(0);
 		}

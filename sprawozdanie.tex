@@ -27,8 +27,9 @@
 		Serwer wypisuje dane diagnostyczne na standardowe wyjście błędów.
 	\paragraph{Zapewnienie odczytu pełnych paczek z danymi}
 		Za każdym razem zarówno serwer jak i klient poprzedza przesyłane dane
-		informacją o ich długości (w bajtach) zawartą w 4 bajtach. Ogranicza to na przykład maksymalną
-		długość wiadomości w systemie.\\
+		informacją o ich długości (w bajtach) zawartą w 2 bajtach. Nie wlicza się w tę długość
+		2 bajtów przechowujących ilość danych.
+		Ogranicza to na przykład maksymalną	długość wiadomości w systemie.\\
 		Pierwszą częścią danych jest zawsze kod operacji o długości 1 bajta.
 	\paragraph{Postępowanie w przypadku otrzymania nieprawidłowych danych}
 		Gdy serwer otrzyma od klienta dane niezgodne z niniejszą specyfikacją, rozłącza danego klienta.
