@@ -53,12 +53,9 @@
 		2 bajty zajmuje to ID, zaś w trzecim bajcie jest kod dostępności danego użytkownika.\\
 		Można sprawdzić dostępność samego siebie.
 	\paragraph{Wysłanie wiadomości}\kod{5}\\
-		Klient wysyła nieujemną ilość osób $n$ (1 bajt) do których wysyła wiadomość. Następnie wysyła $2n$ bajtów -
-		ID odbiorców.\\
+		Klient wysyła 2 bajtów - ID odbiorcy.\\
 		Serwer nie informauje nadawce o powodzeniu operacji wysłania.\\
-		Serwer wysyła \kod{5} do odbiorców nieujemną ilość osób $n$ (1 bajt) do których wysyłana jest wiadomość.
-		Następnie wysyła $2$ bajty - ID nadawcy, oraz $2(n-1)$ bajtów - ID innych odbiorców.\\
-		Dzieki temu klient wie, że wiadomość wysłana jest w konferencji.\\
+		Serwer wysyła \kod{5} do odbiorcy 2 bajty - ID nadawcy.\\
 		Jeżeli odbiorca jest niezalogowany, wiadomości do niego są przechowywane na serwerze
 		i są mu przesyłane w momencie gdy się zaloguje.
 \section{Realizacja}
