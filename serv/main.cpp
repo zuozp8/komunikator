@@ -12,11 +12,14 @@
 #include <vector>
 #include <queue>
 #include <map>
+#include <set>
 
 #define SERVER_PORT 4790
 #define QUEUE_SIZE 10
 typedef int socketlen_t;
 using namespace std;
+//Identyficator of program used in diagnostic output
+string progname;
 
 //User Id => his password
 vector<string> pass;
@@ -27,30 +30,36 @@ map<int, queue<string> > bufferedMessages;
 //User Id => file descriptor of socket to client
 map<int, int> connections;
 
-/**
- * Function that is executed when client dies
- * Removes zombies form system
- */
-void childend(int signo) {
-	pid_t pid;
-	pid = wait(NULL);
-	cerr<<"\t[end of child process number "<<pid<<"]\n";
-}
+//file descriptors of users that are not logged in yet
+set<int> newConnections;
+
+//file descriptor => data about to write
+map<int,string> writeBuffor;
+//file descriptor => readed data
+map<int,string> readBuffor;
+
+//Socket we are listening on
+int nSocket;
 
 /**
  * Terminates everything
  */
 void die(int signo) {
-	cerr<<"Dying...\n";
+	cerr<<progname<<": Dying...\n";
+	for (auto i=connections.begin(); i!=connections.end(); i++) {
+		close(i->second);
+	}
+	for (auto i=newConnections.begin(); i!=newConnections.end(); i++) {
+		close(*i);
+	}
+	close(nSocket);
 	exit(0);
 }
 
 /**
- * Create socket, handle some error
- * @return File descriptor referring to created socket
+ * Create socket, handle some errors
  */
-int makeSocket() {
-	int nSocket;
+void makeSocket() {
 	int nBind, nListen;
 	int nFoo = 1;
 	sockaddr_in stAddr;
@@ -64,7 +73,7 @@ int makeSocket() {
 	nSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (nSocket < 0)
 	{
-		cerr<<": Can't create a socket.\n";
+		cerr<<progname<<": Can't create a socket.\n";
 		exit(1);
 	}
 	setsockopt(nSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&nFoo, sizeof(nFoo));
@@ -73,7 +82,7 @@ int makeSocket() {
 	nBind = bind(nSocket, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
 	if (nBind < 0)
 	{
-		cerr<<": Can't bind a name to a socket.\n";
+		cerr<<progname<<": Can't bind a name to a socket.\n";
 		exit(1);
 	}
 
@@ -81,9 +90,9 @@ int makeSocket() {
 	nListen = listen(nSocket, QUEUE_SIZE);
 	if (nListen < 0)
 	{
-		cerr<<": Can't set queue size.\n";
+		cerr<<progname<<": Can't set queue size.\n";
+		exit(1);
 	}
-	return nSocket;
 }
 
 /**
@@ -92,14 +101,15 @@ int makeSocket() {
  */
 bool login(int fd) {
 	char buf[1600];
-	read(fd,*buf, 2);//Read length
-	int length = *(short*(buf)); //First 2 bytes of buf contain the length
+	read(fd,buf, 2);//Read length
+	int length = *((short*)buf); //First 2 bytes of buf contain the length
 	int readed = 0;
 	while(readed < length) {
-		readed += read(fd,*buf, length-readed);
+		readed += read(fd,buf, length-readed);
 	}
 	//FOO
 }
+
 /**
  * Communication between server and client
  */
@@ -107,37 +117,112 @@ void talkWithClient(int fd) {
 	
 }
 
-int main(int argc, char* argv[]) {
+/**
+ * @return maximum Fd found in project
+ */
+int getMaxFd() {
+	int maxFd = nSocket;
+	for (auto i=connections.begin(); i!=connections.end(); i++) {
+		if (maxFd < i->second)
+			maxFd = i->second;
+	}
+	for (auto i=newConnections.begin(); i!=newConnections.end(); i++) {
+		if (maxFd < *i)
+			maxFd = *i;
+	}
+	return maxFd;
+}
 
-	signal(SIGCHLD, childend); //manage zombies
-	signal(SIGUSR1, die); //manage zombies
-	
-	int nSocket = makeSocket();
+fd_set getRmask() {
+	fd_set mask;
+	FD_ZERO(&mask);
+	FD_SET(nSocket, &mask);
+	for (auto i=connections.begin(); i!=connections.end(); i++) {
+		FD_SET(i->second,&mask);
+	}
+	for (auto i=newConnections.begin(); i!=newConnections.end(); i++) {
+		FD_SET(*i,&mask);
+	}
+	return mask;
+}
+
+fd_set getWmask() {
+	fd_set mask;
+	FD_ZERO(&mask);
+	for (auto i=writeBuffor.begin(); i!=writeBuffor.end(); i++) {
+		FD_SET(i->first,&mask);
+	}
+	return mask;
+}
+
+int main(int argc, char* argv[]) {
+	progname = argv[0];
+	signal(SIGUSR1, die); //let user kill the server
+	makeSocket();
 
 	while(1) {
-		int nClientSocket;
-		socklen_t nTmp;
-		sockaddr_in stClientAddr;
-
-		/* block for connection request */
-		nTmp = sizeof(sockaddr);
-		nClientSocket = accept(nSocket, (sockaddr*)&stClientAddr, &nTmp);
-		if (nClientSocket < 0) {
-			cerr<<argv[0]<<": Can't create a connection's socket.\n";
+		fd_set fsRmask = getRmask(), fsWmask=getWmask();
+		timeval tTimeout;
+		tTimeout.tv_sec = 5;
+		tTimeout.tv_usec = 0;
+		
+		cerr<<"select... "<<flush;
+		int nFound = select(getMaxFd()+1, &fsRmask, &fsWmask, NULL, &tTimeout);
+		cerr<<nFound<<endl;
+		
+		if (nFound < 0) {
+			cerr<<progname<<": select error.\n";
 			exit(1);
 		}
-
-		/* connection */
-		if (! fork()) {
-			//We're child
-			cerr<<argv[0]<<": [connection from "<<inet_ntoa((in_addr)stClientAddr.sin_addr)<<"]\n";
-			if (login(nClientSocket)) {
-				talkWithClient(nClientSocket);
-			}
-			exit(0);
+		
+		if (nFound == 0) {
+			continue;
 		}
+		
+		/* New connection */
+		if (FD_ISSET(nSocket, &fsRmask)) {
+			int nClientSocket;
+			sockaddr_in stClientAddr;
+			socklen_t nTmp;
+			nClientSocket = accept(nSocket, (sockaddr*)&stClientAddr, &nTmp);
+			if (nClientSocket < 0) {
+				cerr<<progname<<": Can't create a connection's socket.\n";
+				exit(1);
+			}
+			newConnections.insert(nClientSocket);
+			cerr<<progname<<": [connection from "<<inet_ntoa((in_addr)stClientAddr.sin_addr)<<"] fd: "<<nClientSocket<<"\n";
+		}
+
+		/* writing */
+		for (auto i=writeBuffor.begin(); i!=writeBuffor.end();) {
+			if (FD_ISSET(i->first,&fsWmask)) {
+				int writtenBytes = write(i->first,i->second.c_str(), i->second.length());
+				i->second.erase(0,writtenBytes);
+				cerr<<progname<<": written "<<writtenBytes<<" to fd "<<i->first
+					<<" "<<i->second.length()<<" bytes left\n";
+			}
+			auto i2 = i;
+			i++;
+			//Delete from writeBuffer, when there is no bytes left to write
+			if (!i->second.length())
+				writeBuffor.erase(i2);
+		}
+		
+		/* logins or registrations */
+		for (auto i=newConnections.begin(); i!=newConnections.end(); i++) {
+			if (FD_ISSET(*i,&fsRmask)) {
+				char buf[1600];
+				int readedBytes = read(*i,buf, 1600);
+				readBuffor[*i].append(buf,readedBytes);
+			}
+		}
+		
+		/* logged in users */
+		/*if (login(nClientSocket)) {
+			talkWithClient(nClientSocket);
+		}*/
+		
 	}
 
-	close(nSocket);
 	return(0);
 }
