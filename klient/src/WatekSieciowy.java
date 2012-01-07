@@ -121,11 +121,24 @@ public class WatekSieciowy implements Runnable
     public int zalogujSie(int daneUzytkownika, String haslo)
     {
         char wiadomosc[] = new char[50];
-        short id = (short) daneUzytkownika;
-        // wyjscie.
-        if(daneUzytkownika == 1 && haslo == "gryberg") return 1;
-        if(daneUzytkownika == 5 && haslo == "holor") return 1;
+        char id = (char)daneUzytkownika;
+        int dlugosc = 2*(haslo.toCharArray().length + 1 + 1);
+        wyjscie.write((char)dlugosc);
+        wyjscie.write(((char)2));
+        wyjscie.write(id);
+        wyjscie.write(haslo.toCharArray());
+        //if(daneUzytkownika == 1 && haslo == "gryberg") return 1;
+        //if(daneUzytkownika == 5 && haslo == "holor") return 1;
         return 0;
+    }
+
+    public void zarejestrujSie(String haslo)
+    {
+        char wiadomosc[] = new char[50];
+        int dlugosc = 2*(haslo.toCharArray().length + 1);
+        wyjscie.write((char)dlugosc);
+        wyjscie.write(((char)1));
+        wyjscie.write(haslo.toCharArray());
     }
 
     private Integer wczytajDlugosc() throws IOException

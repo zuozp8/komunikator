@@ -187,13 +187,13 @@ public class GlowneOkno
             String haslo = new String(oknoLogowania.zwrocHaslo());
             if (oknoLogowania.czyRejestracja())
             {
-                
+                wSiec.zarejestrujSie(haslo);
             }
             if (daneUzytkownika > 0)
             {
                 kontaktJA = new Kontakt("Abel",daneUzytkownika);
                 wynik = 1;
-                //wSiec.zalogujSie(daneUzytkownika, haslo);
+                wSiec.zalogujSie(daneUzytkownika, haslo);
                 //wSiec.czyUdaloSieLogowanie();
             }
             else if (daneUzytkownika == -2)
