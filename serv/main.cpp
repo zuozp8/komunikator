@@ -46,10 +46,10 @@ int nSocket;
  */
 void die(int signo) {
 	cerr<<progname<<": Dying...\n";
-	for (auto i=connections.begin(); i!=connections.end(); i++) {
+	for (map<int,int>::iterator i=connections.begin(); i!=connections.end(); i++) {
 		close(i->second);
 	}
-	for (auto i=newConnections.begin(); i!=newConnections.end(); i++) {
+	for (set<int>::iterator i=newConnections.begin(); i!=newConnections.end(); i++) {
 		close(*i);
 	}
 	close(nSocket);
@@ -120,9 +120,12 @@ void login(int fd, string data) {
 			close(fd);
 			readBuffor[fd].clear();
 		} else{
-			cerr<<progname<<":\t\t success \n";
+			//Create user
 			pass.push_back(data);
 			int newId= pass.size()-1;
+			
+			cerr<<progname<<":\t\t success, new ID: "<<newId<<"\n";
+			
 			writeBuffor[fd].push_back(char(3));//Size of message
 			writeBuffor[fd].push_back(char(0));//Size of message
 			writeBuffor[fd].push_back(char(1));//CODE
@@ -132,7 +135,9 @@ void login(int fd, string data) {
 	} break;
 	case 2: { //login
 		cerr<<progname<<":\t login \n";
-		uint16_t id = data[0]*256+data[1];
+		if(data.length() < 3) {
+		}
+		uint16_t id = unsigned(data[0])*256+unsigned(data[1]);
 		if (pass.size()>id && string(data,2)==pass.at(id)) {
 			writeBuffor[fd].push_back(char(2));//Size of message
 			writeBuffor[fd].push_back(char(0));
@@ -152,7 +157,7 @@ void login(int fd, string data) {
 }
 
 /**
- * Communication between server and client
+ * Communication between server and logged in user
  */
 void talkWithClient(int id, string data) {
 	int fd = connections[id];
@@ -176,16 +181,33 @@ void talkWithClient(int id, string data) {
 			for (uint16_t i=0; i<data.length(); i+=2) {
 				response.push_back(data[0]);
 				response.push_back(data[1]);
-				int checkedId=data[1]*256+data[0];
+				int checkedId=unsigned(data[1])*256+unsigned(data[0]);
 				char status = connections.count(checkedId);
 				response.push_back(status);
 			}
+			writeBuffor[fd].append(response);
 		} break;
 		case 5: { //write message
 			cerr<<progname<<":\t write message\n";
+			if (data.length()<2) {
+				throw "wrong data";
+			}
+			unsigned recieverId = unsigned(data[0])+unsigned(data[1])*256;
+			data.erase(0,2);
+			cerr<<progname<<" to "<<recieverId;
+			if (recieverId >= pass.size()) {
+				throw "wrong reciever";
+			}
+			string response;
+			response.push_back((data.size()+2));
+			response.push_back((data.size()+2)/256);
+			response.push_back(id);
+			response.push_back(id/256);
+			response.append(data);
+			bufferedMessages[recieverId].push(response);
 		} break;
 		default:
-			cerr<<progname<<":\t wrong code \n";
+			throw "wrong code";
 		}
 	} catch (char* error){
 		cerr<<progname<<":\t\t "<<error<<"\n";
@@ -201,11 +223,11 @@ void talkWithClient(int id, string data) {
  */
 int getMaxFd() {
 	int maxFd = nSocket;
-	for (auto i=connections.begin(); i!=connections.end(); i++) {
+	for (map<int,int>::iterator i=connections.begin(); i!=connections.end(); i++) {
 		if (maxFd < i->second)
 			maxFd = i->second;
 	}
-	for (auto i=newConnections.begin(); i!=newConnections.end(); i++) {
+	for (set<int>::iterator i=newConnections.begin(); i!=newConnections.end(); i++) {
 		if (maxFd < *i)
 			maxFd = *i;
 	}
@@ -216,10 +238,10 @@ fd_set getRmask() {
 	fd_set mask;
 	FD_ZERO(&mask);
 	FD_SET(nSocket, &mask);
-	for (auto i=connections.begin(); i!=connections.end(); i++) {
+	for (map<int,int>::iterator i=connections.begin(); i!=connections.end(); i++) {
 		FD_SET(i->second,&mask);
 	}
-	for (auto i=newConnections.begin(); i!=newConnections.end(); i++) {
+	for (set<int>::iterator i=newConnections.begin(); i!=newConnections.end(); i++) {
 		FD_SET(*i,&mask);
 	}
 	return mask;
@@ -228,7 +250,7 @@ fd_set getRmask() {
 fd_set getWmask() {
 	fd_set mask;
 	FD_ZERO(&mask);
-	for (auto i=writeBuffor.begin(); i!=writeBuffor.end(); i++) {
+	for (map<int,string>::iterator i=writeBuffor.begin(); i!=writeBuffor.end(); i++) {
 		FD_SET(i->first,&mask);
 	}
 	return mask;
@@ -236,6 +258,9 @@ fd_set getWmask() {
 
 int main(int argc, char* argv[]) {
 	progname = argv[0];
+	if (progname.find_last_of('/') != string::npos) {
+		progname.erase(0,progname.find_last_of('/')+1);
+	}
 	signal(SIGUSR1, die); //let user kill the server
 	makeSocket();
 
@@ -245,6 +270,7 @@ int main(int argc, char* argv[]) {
 		tTimeout.tv_sec = 20;
 		tTimeout.tv_usec = 0;
 		
+		cerr<<progname<<"New connections: "<<newConnections.size()<<" Logged in: "<<connections.size()<<endl;
 		cerr<<progname<<":select... "<<flush;
 		int nFound = select(getMaxFd()+1, &fsRmask, &fsWmask, NULL, &tTimeout);
 		cerr<<nFound<<endl;
@@ -273,8 +299,8 @@ int main(int argc, char* argv[]) {
 		}
 
 		/* writing */
-		for (auto i=writeBuffor.begin(); i!=writeBuffor.end();) {
-			auto current = i++;
+		for (map<int,string>::iterator i=writeBuffor.begin(); i!=writeBuffor.end();) {
+			map<int,string>::iterator current = i++;
 			int fd = current->first;
 			if (FD_ISSET(fd,&fsWmask)) {
 				int writtenBytes = write(fd,current->second.c_str(), current->second.length());
@@ -288,18 +314,27 @@ int main(int argc, char* argv[]) {
 		}
 		
 		/* logged in users */
-		for (auto i=connections.begin(); i!=connections.end();) {
-			auto current = i++;
+		for (map<int,int>::iterator i=connections.begin(); i!=connections.end();) {
+			map<int,int>::iterator current = i++;
 			int fd = current->second;
 			int id = current->first;
 			if (FD_ISSET(fd,&fsRmask)) {
 				char buf[1600];
 				int readedBytes = read(fd,buf, 1600);
 				readBuffor[fd].append(buf,readedBytes);
-				uint16_t messageLength = readBuffor[fd][1]*265 + readBuffor[fd][0];
+				if (readBuffor[fd].length()<2)
+					continue;
+				uint16_t messageLength = unsigned(readBuffor[fd][1])*265 + unsigned(readBuffor[fd][0]);
 				cerr<<progname<<": readed "<<readedBytes<<" from fd "<<fd<<"(id:"<<id<<")"
 					<<", "<<readBuffor[fd].length()<<" in buffor, "<<messageLength<<" message length\n";
 				if (readBuffor[fd].length() >= messageLength+2u) {
+					if (messageLength == 0) {
+						writeBuffor.erase(fd);
+						readBuffor.erase(fd);
+						close(fd);
+						connections.erase(id);
+						continue;
+					}
 					string data(readBuffor[fd],2,messageLength);
 					readBuffor[fd].erase(0,messageLength+2);
 					talkWithClient(id,data);
@@ -311,17 +346,25 @@ int main(int argc, char* argv[]) {
 		}
 		
 		/* logins or registrations */
-		for (auto i=newConnections.begin(); i!=newConnections.end();) {
+		for (set<int>::iterator i=newConnections.begin(); i!=newConnections.end();) {
 			auto current = i++;
 			int fd = *current;
 			if (FD_ISSET(fd,&fsRmask)) {
 				char buf[1600];
 				int readedBytes = read(fd,buf, 1600);
 				readBuffor[fd].append(buf,readedBytes);
-				uint16_t messageLength = readBuffor[fd][1]*265 + readBuffor[fd][0];
+				if (readBuffor[fd].length()<2)
+					continue;
+				uint16_t messageLength = unsigned(readBuffor[fd][1])*265 + unsigned(readBuffor[fd][0]);
 				cerr<<progname<<": readed "<<readedBytes<<" from fd "<<fd
 					<<", "<<readBuffor[fd].length()<<" in buffor, "<<messageLength<<" message length\n";
 				if (readBuffor[fd].length() >= messageLength+2u) {
+					if (messageLength == 0) {
+						readBuffor.erase(fd);
+						close(fd);
+						connections.erase(fd);
+						continue;
+					}
 					string data(readBuffor[fd],2,messageLength);
 					readBuffor[fd].erase(0,messageLength+2);
 					login(fd,data);
@@ -333,6 +376,15 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		
+		/* move messages to write buffer */
+		for (map<int,int>::iterator i=connections.begin(); i!=connections.end(); i++) {
+			if (!writeBuffor.count(i->second) && bufferedMessages.count(i->first)) {
+				writeBuffor[i->second] = bufferedMessages[i->first].front();
+				bufferedMessages[i->first].pop();
+				if (bufferedMessages[i->first].empty())
+					bufferedMessages.erase(i->first);
+			}
+		}
 	}
 
 	return(0);

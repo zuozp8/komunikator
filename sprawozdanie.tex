@@ -55,24 +55,33 @@
 		Można sprawdzić dostępność samego siebie.\\
 		Można sprawdzić dostępność maksymalnie 1000 osób.
 	\paragraph{Wysłanie wiadomości}\kod{5}\\
-		Klient wysyła 2 bajtów - ID odbiorcy.\\
+		Klient wysyła 2 bajty - ID odbiorcy, a potem wysyłaną wiadomość\\
 		Serwer nie informauje nadawce o powodzeniu operacji wysłania.\\
-		Serwer wysyła \kod{5} do odbiorcy 2 bajty - ID nadawcy.\\
+		Serwer wysyła \kod{5} do odbiorcy 2 bajty - ID nadawcy, a potem wysyłaną wiadomość.\\
 		Jeżeli odbiorca jest niezalogowany, wiadomości do niego są przechowywane na serwerze
 		i są mu przesyłane w momencie gdy się zaloguje.
+		
 \section{Realizacja}
-	\paragraph{Serwer}Stworzyliśmy serwer używając poznanych na zajęciach socketów BSD używając języka C++.
+	\subsection{Serwer}Stworzyliśmy serwer używając poznanych na zajęciach socketów BSD używając języka C++.
 	By przechowywać dane o użytkownikach, używamy dynamicznych kontenerów z STL.
 	Kod serwera jest krótki, więc pozwoliliśmy sobie go zamknąć w pojedynczym pliku \textit{main.cpp}.
 	\begin{quote}
 		\textit{Code is the ultimate documentation.}
 	\end{quote}
-	\subparagraph{Wielowątkowość}Mieliśmy problem z wieloątkowością - gdybyśmy dla każdego połączenia tworzyli
+	\paragraph{Wielowątkowość}Mieliśmy problem z wieloątkowością - gdybyśmy dla każdego połączenia tworzyli
 	nowy wątek, to z tegoż nowego wątku nie moglibyśmy bezpośrednio wysyłać wiadomości do użytkowników, którzy
 	się zalogowali po nas - nie mielibyśmy dostępu do gniazd dla nich stworzonych. Dlatego nie tworzyliśmy nowych
 	wątków, a użyliśmy funckji \textit{select} by oczekiwać na możliwość odczytu lub zapisu do wielu gniazd.
-		
-	\paragraph{Klient}Klienta stworzyliśmy w języku Java, gdyż byliśmy w stanie potem uruchamić go w środowisku
+	\paragraph{Buforowanie wiadomości}Aby można było wysyłać wiadomości do niezalogowanych użytkowników, na serwerze
+	trzymamy je na mapie \textit{bufferedMessages} w postaci kolejki całych pakietów do wysłania identyfikowanej przez
+	ID użytkownika, do którego mają zostać wysłane. Jeżeli odbiorca zerwie połączenie gdy przesyłamy mu wiadomość, to
+	zostaje ona utracona.
+	\paragraph{}Odczytując dane z gniazda lub zapisując do niego, możemy nie odczytać/zapisać całego pakietu.
+	Dlatego też zawsze gdy odczytujemy dane z gniazdka, wpisujemy je do \textit{readBuffor}a, później zaś, gdy
+	odbierzemy cały pakiet, kopiujemy go i usówamy z readBuffora. Podobnie, wysyłając dane do klienta, zapisujemy je do
+	\textit{writeBuffor}a i staramy się sukcesywnie przesyłać.
+	
+	\subsection{Klient}Klienta stworzyliśmy w języku Java, gdyż byliśmy w stanie potem uruchamić go w środowisku
 	Linux oraz Windows, a także stworzyć wersję dla urządzenia mobilnego z systemem Android.
 	
 \section{Obsługa programu}
