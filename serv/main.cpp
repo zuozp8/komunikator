@@ -97,24 +97,103 @@ void makeSocket() {
 
 /**
  * Login or register
- * @return If user logged in
  */
-bool login(int fd) {
-	char buf[1600];
-	read(fd,buf, 2);//Read length
-	int length = *((short*)buf); //First 2 bytes of buf contain the length
-	int readed = 0;
-	while(readed < length) {
-		readed += read(fd,buf, length-readed);
+void login(int fd, string data) {
+	cerr<<progname<<": login(fd:"<<fd<<")\n";
+	if (data.length() < 1) {
+		cerr<<progname<<":\t no code\n";
+		close(fd);
+		readBuffor[fd].clear();
+		return;
 	}
-	//FOO
+	char code = data[0];
+	data.erase(0,1);
+	switch (code) {
+	case 1: { //register
+		cerr<<progname<<":\t register \n";
+		if (data.length() < 3) {//Zbyt krótkie hasło
+			cerr<<progname<<":\t\t password to short \n";
+			close(fd);
+			readBuffor[fd].clear();
+		} else if (pass.size() >= 1<<15) {
+			cerr<<progname<<":\t\t too many users \n";
+			close(fd);
+			readBuffor[fd].clear();
+		} else{
+			cerr<<progname<<":\t\t success \n";
+			pass.push_back(data);
+			int newId= pass.size()-1;
+			writeBuffor[fd].push_back(char(3));//Size of message
+			writeBuffor[fd].push_back(char(0));//Size of message
+			writeBuffor[fd].push_back(char(1));//CODE
+			writeBuffor[fd].push_back(char(newId));
+			writeBuffor[fd].push_back(char(newId/256));
+		}
+	} break;
+	case 2: { //login
+		cerr<<progname<<":\t login \n";
+		uint16_t id = data[0]*256+data[1];
+		if (pass.size()>id && string(data,2)==pass.at(id)) {
+			writeBuffor[fd].push_back(char(2));//Size of message
+			writeBuffor[fd].push_back(char(0));
+			writeBuffor[fd].push_back(char(2));//CODE
+			writeBuffor[fd].push_back(char(1));
+			connections[id] = fd;
+		} else {
+			close(fd);
+			readBuffor[fd].clear();
+		}
+	} break;
+	default:
+		cerr<<progname<<":\t wrong code \n";
+		close(fd);
+		readBuffor[fd].clear();
+	}
 }
 
 /**
  * Communication between server and client
  */
-void talkWithClient(int fd) {
-	
+void talkWithClient(int id, string data) {
+	int fd = connections[id];
+	cerr<<progname<<": talkWithClient(id:"<<id<<")\n";
+	try {
+		if (data.length() < 1) {
+			throw "no code";
+		}
+		char code = data[0];
+		data.erase(0,1);
+		switch (code) {
+		case 3: { //check friend's status
+			cerr<<progname<<":\t check friend's status\n";
+			if (data.length()%2 ==1 || data.length()>2000) {
+				throw "wrong data size";
+			}
+			string response;
+			int responseSize = 3*data.length()/2;
+			response.push_back(responseSize);
+			response.push_back(responseSize/256);
+			for (uint16_t i=0; i<data.length(); i+=2) {
+				response.push_back(data[0]);
+				response.push_back(data[1]);
+				int checkedId=data[1]*256+data[0];
+				char status = connections.count(checkedId);
+				response.push_back(status);
+			}
+		} break;
+		case 5: { //write message
+			cerr<<progname<<":\t write message\n";
+		} break;
+		default:
+			cerr<<progname<<":\t wrong code \n";
+		}
+	} catch (char* error){
+		cerr<<progname<<":\t\t "<<error<<"\n";
+		close(fd);
+		readBuffor[fd].clear();
+		writeBuffor.erase(fd);
+		connections.erase(id);
+	}
 }
 
 /**
@@ -163,10 +242,10 @@ int main(int argc, char* argv[]) {
 	while(1) {
 		fd_set fsRmask = getRmask(), fsWmask=getWmask();
 		timeval tTimeout;
-		tTimeout.tv_sec = 5;
+		tTimeout.tv_sec = 20;
 		tTimeout.tv_usec = 0;
 		
-		cerr<<"select... "<<flush;
+		cerr<<progname<<":select... "<<flush;
 		int nFound = select(getMaxFd()+1, &fsRmask, &fsWmask, NULL, &tTimeout);
 		cerr<<nFound<<endl;
 		
@@ -195,32 +274,64 @@ int main(int argc, char* argv[]) {
 
 		/* writing */
 		for (auto i=writeBuffor.begin(); i!=writeBuffor.end();) {
-			if (FD_ISSET(i->first,&fsWmask)) {
-				int writtenBytes = write(i->first,i->second.c_str(), i->second.length());
-				i->second.erase(0,writtenBytes);
-				cerr<<progname<<": written "<<writtenBytes<<" to fd "<<i->first
-					<<" "<<i->second.length()<<" bytes left\n";
+			auto current = i++;
+			int fd = current->first;
+			if (FD_ISSET(fd,&fsWmask)) {
+				int writtenBytes = write(fd,current->second.c_str(), current->second.length());
+				current->second.erase(0,writtenBytes);
+				cerr<<progname<<": written "<<writtenBytes<<" to fd "<<fd
+					<<", "<<current->second.length()<<" bytes left\n";
 			}
-			auto i2 = i;
-			i++;
 			//Delete from writeBuffer, when there is no bytes left to write
-			if (!i->second.length())
-				writeBuffor.erase(i2);
-		}
-		
-		/* logins or registrations */
-		for (auto i=newConnections.begin(); i!=newConnections.end(); i++) {
-			if (FD_ISSET(*i,&fsRmask)) {
-				char buf[1600];
-				int readedBytes = read(*i,buf, 1600);
-				readBuffor[*i].append(buf,readedBytes);
-			}
+			if (!current->second.length())
+				writeBuffor.erase(current);
 		}
 		
 		/* logged in users */
-		/*if (login(nClientSocket)) {
-			talkWithClient(nClientSocket);
-		}*/
+		for (auto i=connections.begin(); i!=connections.end();) {
+			auto current = i++;
+			int fd = current->second;
+			int id = current->first;
+			if (FD_ISSET(fd,&fsRmask)) {
+				char buf[1600];
+				int readedBytes = read(fd,buf, 1600);
+				readBuffor[fd].append(buf,readedBytes);
+				uint16_t messageLength = readBuffor[fd][1]*265 + readBuffor[fd][0];
+				cerr<<progname<<": readed "<<readedBytes<<" from fd "<<fd<<"(id:"<<id<<")"
+					<<", "<<readBuffor[fd].length()<<" in buffor, "<<messageLength<<" message length\n";
+				if (readBuffor[fd].length() >= messageLength+2u) {
+					string data(readBuffor[fd],2,messageLength);
+					readBuffor[fd].erase(0,messageLength+2);
+					talkWithClient(id,data);
+				}
+				if (!readBuffor[fd].length()) {
+					readBuffor.erase(fd);
+				}
+			}
+		}
+		
+		/* logins or registrations */
+		for (auto i=newConnections.begin(); i!=newConnections.end();) {
+			auto current = i++;
+			int fd = *current;
+			if (FD_ISSET(fd,&fsRmask)) {
+				char buf[1600];
+				int readedBytes = read(fd,buf, 1600);
+				readBuffor[fd].append(buf,readedBytes);
+				uint16_t messageLength = readBuffor[fd][1]*265 + readBuffor[fd][0];
+				cerr<<progname<<": readed "<<readedBytes<<" from fd "<<fd
+					<<", "<<readBuffor[fd].length()<<" in buffor, "<<messageLength<<" message length\n";
+				if (readBuffor[fd].length() >= messageLength+2u) {
+					string data(readBuffor[fd],2,messageLength);
+					readBuffor[fd].erase(0,messageLength+2);
+					login(fd,data);
+					newConnections.erase(fd);
+				}
+				if (!readBuffor[fd].length()) {
+					readBuffor.erase(fd);
+				}
+			}
+		}
 		
 	}
 

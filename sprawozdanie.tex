@@ -30,19 +30,20 @@
 		informacją o ich długości (w bajtach) zawartą w 2 bajtach. Nie wlicza się w tę długość
 		2 bajtów przechowujących ilość danych.
 		Ogranicza to na przykład maksymalną	długość wiadomości w systemie.\\
-		Pierwszą częścią danych jest zawsze kod operacji o długości 1 bajta.
+		Pierwszą częścią danych jest zawsze kod operacji o długości 1 bajta.\\
+		Wszelskie ciągi znaków wysyłamy bez znaku 0 na końcu.\\
+		Przesyłając liczby wysyłamy najpierw mniej znaczące bajty, potem bardziej znaczące.
 	\paragraph{Postępowanie w przypadku otrzymania nieprawidłowych danych}
 		Gdy serwer otrzyma od klienta dane niezgodne z niniejszą specyfikacją, rozłącza danego klienta.
 	\paragraph{Port serwera} Serwer nasłuchuje pakietów TCP na porcie 4790.
 	\paragraph{Łączenie} Nawiązując połączenie z serwerem klient może albo się zarejestrować, albo zalogować.
 	\paragraph{Rejestracja}\kod{1}\\
 		Można się rejestrować jedynie tuż po nawiązaniu połączenia.
-		Klient przesyła swoje hasło zakończone \textbackslash{}0.
-		Serwer odpowiada \kod{1} wysyłając 2 bajty: numer ID w przypadku sukcesu lub 0 w przypadku błędu,
-		następnie rozłącza się.
+		Klient przesyła swoje hasło, musi ono mieć conajmniej 3 bajty(znaki).
+		Serwer odpowiada \kod{1} wysyłając 2 bajty: numer ID w przypadku następnie rozłącza się.
 	\paragraph{Logowanie}\kod{2}\\
-		Klient wysyła swoje ID (2 bajty) do serwera, po nim zaś swoje hasło zakończone \textbackslash{}0.
-		Serwer odpowiada \kod{2} wysyłając 1 bajt: 1 w przypadku sukcesu lub 0 w przypadku błędu.\\
+		Klient wysyła swoje ID (2 bajty) do serwera, po nim zaś swoje hasło.
+		Serwer odpowiada \kod{2} wysyłając 1 bajt: 1 w przypadku sukcesu lub kończy połączenie w przypadku błędu.
 	\paragraph{Zakończenie połączenia} Zarówno klient jak i serwer mogą zakończyć połączenie po prostu
 		kończąc połączenie TCP.
 	
@@ -51,7 +52,8 @@
 		Klient wysyła kilka ID (2-bajtowe, jedno po drugim) do serwera.
 		Serwer odpowiada \kod{3} wysyłając wielokrotność 3 bajtów: dla każdego ID o które wystosowano zapytanie
 		2 bajty zajmuje to ID, zaś w trzecim bajcie jest kod dostępności danego użytkownika.\\
-		Można sprawdzić dostępność samego siebie.
+		Można sprawdzić dostępność samego siebie.\\
+		Można sprawdzić dostępność maksymalnie 1000 osób.
 	\paragraph{Wysłanie wiadomości}\kod{5}\\
 		Klient wysyła 2 bajtów - ID odbiorcy.\\
 		Serwer nie informauje nadawce o powodzeniu operacji wysłania.\\

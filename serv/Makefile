@@ -1,5 +1,7 @@
 all: serv
 serv: main.o
-	g++ $< -Wall -o $@
+	g++ $< -g -Wall -o $@
 main.o: main.cpp
-	g++ $< -c -Wall -std=c++0x -o $@
+	g++ $< -c -g -Wall -std=c++0x -o $@
+clean:
+	rm main.o serv
