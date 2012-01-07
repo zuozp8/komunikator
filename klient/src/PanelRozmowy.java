@@ -152,13 +152,18 @@ class PanelRozmowy extends JPanel
 	    bold = doc.addStyle( "bold", regular );
 	    StyleConstants.setBold( bold, true );
 	}
+	
+	public void odbierzWiadomosc(Wiadomosc wiadomosc)
+	{
+        wyslijWiadomoscDoPolaRozmowy(wiadomosc.zwrocTresc(), true);
+	}
 
 	private void wyslijWiadomosc()
 	{
 		String wiadomosc = this.poleWiadomosci.getText()+"\n";
 		wyczyscPoleWiadomosci();
 		// wyslijWiadomoscDoRozmowcy(wiadomosc);
-		wyslijWiadomoscDoPolaRozmowy(wiadomosc);
+		wyslijWiadomoscDoPolaRozmowy(wiadomosc, false);
 	}
 
 	private void wyczyscPoleWiadomosci()
@@ -166,11 +171,11 @@ class PanelRozmowy extends JPanel
 		this.poleWiadomosci.setText("");
 	}
 
-	private void wyslijWiadomoscDoPolaRozmowy(String wiadomosc)
+	private void wyslijWiadomoscDoPolaRozmowy(String wiadomosc, boolean przychodzaca)
 	{
 		try
 		{
-			String poczatek = this.stworzRozpoczecieWiadomosci(false);
+			String poczatek = this.stworzRozpoczecieWiadomosci(przychodzaca);
 			doc.insertString(doc.getLength(), poczatek,  this.bold);
 			doc.insertString(doc.getLength(), wiadomosc, this.regular);
 		}

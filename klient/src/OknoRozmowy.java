@@ -11,6 +11,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -28,6 +33,7 @@ public class OknoRozmowy extends JFrame
 {
 	private JTabbedPane zbiorZakladek = new JTabbedPane();
 	private DefaultListModel ukryteZakladki = new DefaultListModel();
+	Map<Integer, Integer> mapaPolozeniaRozmow = new HashMap<Integer, Integer>();
 
 	public OknoRozmowy() throws HeadlessException
 	{
@@ -45,7 +51,7 @@ public class OknoRozmowy extends JFrame
 		zbiorZakladek.addTab(osoba.getNazwa(), nowa);
 		zbiorZakladek.setTabComponentAt(zbiorZakladek.getTabCount()-1, 
 									new NaglowekZakladki(this));
-
+		mapaPolozeniaRozmow.put(osoba.getId(), zbiorZakladek.getTabCount()-1);
 		setVisible(true);
 	}
 
@@ -97,6 +103,23 @@ public class OknoRozmowy extends JFrame
 		}
 		return false;
 	}
+
+    public void odbierzWiadomosci(ArrayList<Wiadomosc> odebraneWiadomosci)
+    {
+        int polozenie;
+        PanelRozmowy panelRozmowy;
+        Wiadomosc wiadomosc,wiadomoscDruga;
+        ArrayList<Wiadomosc> wiadomosciTenSamNadawca = new ArrayList<Wiadomosc>();
+        for(int i=0; i < odebraneWiadomosci.size() ; i++)
+        {
+            wiadomosc = odebraneWiadomosci.get(i);
+            if( mapaPolozeniaRozmow.get(wiadomosc.getNadawca().getId()) == null ) dodajRozmowe(wiadomosc.getNadawca());
+            polozenie = mapaPolozeniaRozmow.get(wiadomosc.getNadawca().getId());
+            panelRozmowy = (PanelRozmowy) this.zbiorZakladek.getComponentAt(polozenie);
+            panelRozmowy.odbierzWiadomosc(wiadomosc);
+            
+        }
+    }
 	
 	public String zwrocNazweRozmowcy(int n)
 	{
@@ -119,6 +142,16 @@ public class OknoRozmowy extends JFrame
 		this.ukryteZakladki.addElement(zakladka);
 		this.zbiorZakladek.remove(n);
 	}
+
+    public void zmienNickKontaktu(Kontakt kontakt,
+            String ostatecznyNick)
+    {
+        if( this.mapaPolozeniaRozmow.get(kontakt.getId()) !=null)
+        {
+            int polozenie = this.mapaPolozeniaRozmow.get(kontakt.getId());
+            this.zbiorZakladek.setTitleAt(polozenie, ostatecznyNick);
+        }
+    }
 }
 
 class NaglowekZakladki extends JPanel {

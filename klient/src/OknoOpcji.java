@@ -1,28 +1,19 @@
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
-import javax.swing.SwingUtilities;
 
 
 public class OknoOpcji extends JFrame
 {
 	JTabbedPane zakladki;
 	JTextField poleAdresIP;
-	JTextField poleNumerPortu;
-	/*
-	private GridBagConstraints ograniczeniaWzor = null;
-    private GridBagConstraints ograniczeniaPol = null;
-    private GridBagConstraints ograniczeniaLabel = null;
-	*/
+
+    JTextField poleNumerPortu;
+    JTextField poleNick;
+
 	OknoOpcji()
 	{
 		super();
@@ -32,37 +23,25 @@ public class OknoOpcji extends JFrame
 		utworzKartePolaczenia();
 		ustawieniaOkna();
 	}
-	/*
-    public void ustawOgraniczenia() {
-    	ograniczeniaWzor = new GridBagConstraints();
-    	ograniczeniaWzor.fill = GridBagConstraints.HORIZONTAL;
-    	ograniczeniaWzor.anchor = GridBagConstraints.NORTHWEST;
-        ograniczeniaWzor.weightx = 1.0;
-        ograniczeniaWzor.gridwidth = GridBagConstraints.REMAINDER;
-        ograniczeniaWzor.insets = new Insets(1, 1, 1, 1);
 
-        ograniczeniaPol = (GridBagConstraints) ograniczeniaWzor.clone();
-        ograniczeniaPol.gridwidth = GridBagConstraints.RELATIVE;
-
-        ograniczeniaLabel = (GridBagConstraints) ograniczeniaWzor.clone();
-        ograniczeniaLabel.weightx = 0.0;
-        ograniczeniaLabel.gridwidth = 1;
-    }
-*/
 	private void utworzKartePolaczenia()
 	{
 		SpringLayout layout = new SpringLayout();
 		JPanel panel = new JPanel();
 		JLabel labelIP = new JLabel("Adres IP serwera");
 		JLabel labelPort = new JLabel("Numer portu");
+        JLabel labelNick = new JLabel("Twój nick");
 		poleAdresIP = new JTextField(20);
 		poleNumerPortu = new JTextField(8);
+		poleNick = new JTextField(20);
 
 		panel.setLayout(layout);
 		panel.add(labelIP);
 		panel.add(poleAdresIP);
 		panel.add(labelPort);
 		panel.add(poleNumerPortu);
+        panel.add(labelNick);
+        panel.add(poleNick);
 		
 		layout.putConstraint(SpringLayout.WEST,  labelIP, 10, SpringLayout.WEST,  panel);
 		layout.putConstraint(SpringLayout.NORTH, labelIP, 25, SpringLayout.NORTH, panel);
@@ -74,16 +53,47 @@ public class OknoOpcji extends JFrame
 		layout.putConstraint(SpringLayout.NORTH, poleNumerPortu, 65, SpringLayout.NORTH, panel);
 		layout.putConstraint(SpringLayout.WEST, poleNumerPortu, 50, SpringLayout.EAST, labelPort);
 		
+		layout.putConstraint(SpringLayout.WEST,  labelNick, 10, SpringLayout.WEST,  panel);
+        layout.putConstraint(SpringLayout.NORTH, labelNick, 105, SpringLayout.NORTH, panel);
+        layout.putConstraint(SpringLayout.NORTH, poleNick, 105, SpringLayout.NORTH, panel);
+        layout.putConstraint(SpringLayout.WEST, poleNick, 80, SpringLayout.EAST, labelNick);
+		
 		panel.setSize(400, 300);
 		panel.setVisible(true);
 
-		this.zakladki.addTab("Połączenie",panel);
+		this.zakladki.addTab("Ustawienia",panel);
+		ustawieniaDomyslne();
 	}
 
-	private void ustawieniaOkna()
+    private void ustawieniaOkna()
 	{
 		setSize(400,300);
 		setVisible(true);
 		this.setResizable(false);
 	}
+    
+    public String zwrocAdresIP()
+    {
+        return poleAdresIP.getText();
+    }
+    
+    public int zwrocNumerPortu()
+    {
+        try
+        {
+            int port = Integer.valueOf(poleNumerPortu.getText());
+            return port;
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    private void ustawieniaDomyslne()
+    {
+        poleAdresIP.setText("127.0.0.1");
+        poleNumerPortu.setText("4790");
+    }
 }

@@ -1,5 +1,7 @@
+import java.io.Serializable;
 
-public class Kontakt {
+
+public class Kontakt implements Comparable, Serializable {
 
 	private String nazwa;
 	private boolean online;
@@ -46,4 +48,18 @@ public class Kontakt {
 	{
 		return konwersacja;
 	}
+
+    @Override
+    public int compareTo(Object kontakt)
+    {
+        final int BEFORE = -1;
+        final int EQUAL = 0;
+        final int AFTER = 1;
+        
+        if(this == kontakt) return EQUAL;
+        
+        if(this.getId() < ((Kontakt) kontakt).getId()) return BEFORE;
+        else if (this.getId() > ((Kontakt) kontakt).getId()) return AFTER;
+        else return EQUAL;
+    }
 }
