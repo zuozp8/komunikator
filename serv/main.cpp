@@ -267,11 +267,11 @@ int main(int argc, char* argv[]) {
 	while(1) {
 		fd_set fsRmask = getRmask(), fsWmask=getWmask();
 		timeval tTimeout;
-		tTimeout.tv_sec = 20;
+		tTimeout.tv_sec = 5;
 		tTimeout.tv_usec = 0;
 		
-		cerr<<progname<<"New connections: "<<newConnections.size()<<" Logged in: "<<connections.size()<<endl;
-		cerr<<progname<<":select... "<<flush;
+		cerr<<progname<<": New connections: "<<newConnections.size()<<" Logged in: "<<connections.size()<<endl;
+		cerr<<progname<<": select... "<<flush;
 		int nFound = select(getMaxFd()+1, &fsRmask, &fsWmask, NULL, &tTimeout);
 		cerr<<nFound<<endl;
 		
@@ -321,6 +321,13 @@ int main(int argc, char* argv[]) {
 			if (FD_ISSET(fd,&fsRmask)) {
 				char buf[1600];
 				int readedBytes = read(fd,buf, 1600);
+				if (readedBytes == 0) { //connection gets closed
+					cerr<<progname<<": connection closed fd: "<<fd<<" id: "<<id<<endl;
+					readBuffor.erase(fd);
+					close(fd);
+					connections.erase(current);
+					continue;
+				}
 				readBuffor[fd].append(buf,readedBytes);
 				if (readBuffor[fd].length()<2)
 					continue;
@@ -352,6 +359,13 @@ int main(int argc, char* argv[]) {
 			if (FD_ISSET(fd,&fsRmask)) {
 				char buf[1600];
 				int readedBytes = read(fd,buf, 1600);
+				if (readedBytes == 0) { //connection gets closed
+					cerr<<progname<<": connection closed fd: "<<fd<<endl;
+					readBuffor.erase(fd);
+					close(fd);
+					newConnections.erase(current);
+					continue;
+				}
 				readBuffor[fd].append(buf,readedBytes);
 				if (readBuffor[fd].length()<2)
 					continue;
@@ -362,7 +376,7 @@ int main(int argc, char* argv[]) {
 					if (messageLength == 0) {
 						readBuffor.erase(fd);
 						close(fd);
-						connections.erase(fd);
+						newConnections.erase(current);
 						continue;
 					}
 					string data(readBuffor[fd],2,messageLength);
