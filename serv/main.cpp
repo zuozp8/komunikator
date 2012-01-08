@@ -288,10 +288,10 @@ int main(int argc, char* argv[]) {
 		if (FD_ISSET(nSocket, &fsRmask)) {
 			int nClientSocket;
 			sockaddr_in stClientAddr;
-			socklen_t nTmp;
+			socklen_t nTmp = sizeof(sockaddr);
 			nClientSocket = accept(nSocket, (sockaddr*)&stClientAddr, &nTmp);
 			if (nClientSocket < 0) {
-				cerr<<progname<<": Can't create a connection's socket.\n";
+				cerr<<progname<<": Can't create a connection's socket. ("<<errno<<")\n";
 				exit(1);
 			}
 			newConnections.insert(nClientSocket);
@@ -324,7 +324,7 @@ int main(int argc, char* argv[]) {
 				readBuffor[fd].append(buf,readedBytes);
 				if (readBuffor[fd].length()<2)
 					continue;
-				uint16_t messageLength = unsigned(readBuffor[fd][1])*265 + unsigned(readBuffor[fd][0]);
+				uint16_t messageLength = unsigned(readBuffor[fd][1])*256 + unsigned(readBuffor[fd][0]);
 				cerr<<progname<<": readed "<<readedBytes<<" from fd "<<fd<<"(id:"<<id<<")"
 					<<", "<<readBuffor[fd].length()<<" in buffor, "<<messageLength<<" message length\n";
 				if (readBuffor[fd].length() >= messageLength+2u) {
@@ -355,7 +355,7 @@ int main(int argc, char* argv[]) {
 				readBuffor[fd].append(buf,readedBytes);
 				if (readBuffor[fd].length()<2)
 					continue;
-				uint16_t messageLength = unsigned(readBuffor[fd][1])*265 + unsigned(readBuffor[fd][0]);
+				uint16_t messageLength = unsigned(readBuffor[fd][1])*256 + unsigned(readBuffor[fd][0]);
 				cerr<<progname<<": readed "<<readedBytes<<" from fd "<<fd
 					<<", "<<readBuffor[fd].length()<<" in buffor, "<<messageLength<<" message length\n";
 				if (readBuffor[fd].length() >= messageLength+2u) {
