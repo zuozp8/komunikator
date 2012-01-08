@@ -1,19 +1,19 @@
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.StringTokenizer;
 
 public class WatekSieciowy implements Runnable
 {
-
     int port;
     boolean polaczony;
     Socket gniazdo;
@@ -21,22 +21,24 @@ public class WatekSieciowy implements Runnable
     Kontakt daneDoLogowania;
     ListaKontaktow listaKontaktow;
     OknoRozmowy oknoRozmowy;
-    PrintWriter wyjscie;
     BufferedReader wejscie;
-
-    static ArrayList<Wiadomosc> listaWiadomosci = new ArrayList<Wiadomosc>();
-
     ArrayList<Wiadomosc> odebraneWiadomosci = new ArrayList<Wiadomosc>();
     Map<Integer, String> nadawcy = new HashMap<Integer, String>();
+    static short wynikLogowania = -1;
+    static short wynikRejestracji = -1;
 
-    public WatekSieciowy(String adres, int port, ListaKontaktow listaKontaktow,
-            OknoRozmowy oknoRozmowy)
+    static OutputStream outputStream;
+    static ByteArrayOutputStream wyjscie;
+    static ArrayList<Wiadomosc> listaWiadomosci = new ArrayList<Wiadomosc>();
+
+    public WatekSieciowy(String adres, int port/*, ListaKontaktow listaKontaktow,
+            OknoRozmowy oknoRozmowy*/)
     {
         super();
         this.adres = adres;
         this.port = port;
-        this.listaKontaktow = listaKontaktow;
-        this.oknoRozmowy = oknoRozmowy;
+        //this.listaKontaktow = listaKontaktow;
+        //this.oknoRozmowy = oknoRozmowy;
         polaczony = false;
     }
 
@@ -75,8 +77,10 @@ public class WatekSieciowy implements Runnable
     {
         try
         {
-            gniazdo = new Socket(adres, port);
-            wyjscie = new PrintWriter(gniazdo.getOutputStream(), true);
+            InetAddress inAddress= zwrocInetAddress(adres);
+            gniazdo = new Socket(inAddress, port);
+            outputStream = gniazdo.getOutputStream();
+            wyjscie = new ByteArrayOutputStream();
             wejscie = new BufferedReader(new InputStreamReader(gniazdo
                     .getInputStream()));
             polaczony = true;
@@ -95,19 +99,39 @@ public class WatekSieciowy implements Runnable
         }
     }
 
+    private InetAddress zwrocInetAddress(String adres)
+    {
+        try
+        {
+            int licznik = 0;
+            byte tablica[] = new byte[4];
+            StringTokenizer st = new StringTokenizer(adres,".");
+            while(st.hasMoreTokens())
+            {
+                tablica[licznik] = (byte)(int)Integer.valueOf(st.nextToken());
+                licznik++;
+            }
+            return InetAddress.getByAddress(tablica);
+        }
+        catch (UnknownHostException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private void odczytajDane()
     {
-        String tresc;
-        String pomoc;
+        String wiadomosc;
         int dlugosc;
         int kod;
         try
         {
             do
             {
-                dlugosc = wczytajDlugosc();
-                kod = wczytajKodWejscia();
-                wczytajTrescWiadomosci(dlugosc);
+                wiadomosc = wejscie.readLine();
+                przetworzWiadomosc(wiadomosc);
             } while (wejscie.ready());
             przekazWiadomosci();
             wyczyscWiadomosci();
@@ -118,70 +142,83 @@ public class WatekSieciowy implements Runnable
         }
     }
 
-    public int zalogujSie(int daneUzytkownika, String haslo)
+    public static int zalogujSie(int daneUzytkownika, String haslo)
     {
         char wiadomosc[] = new char[50];
-        char id = (char)daneUzytkownika;
-        int dlugosc = 2*(haslo.toCharArray().length + 1 + 1);
-        wyjscie.write((char)dlugosc);
-        wyjscie.write(((char)2));
-        wyjscie.write(id);
-        wyjscie.write(haslo.toCharArray());
-        //if(daneUzytkownika == 1 && haslo == "gryberg") return 1;
-        //if(daneUzytkownika == 5 && haslo == "holor") return 1;
+        char id = (char) daneUzytkownika;
+        int dlugosc = 2 * (haslo.toCharArray().length + 1 + 1);
+        wpiszLiczbe2B((short) dlugosc);
+        wpiszLiczbe1B(2);
+        wpiszLiczbe2B((short) daneUzytkownika);
+        wpiszString(haslo);
+        zakonczWpisywanie();
         return 0;
     }
 
-    public void zarejestrujSie(String haslo)
+    public static int wynikLogowania()
+    {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    public static void zarejestrujSie(String haslo)
     {
         char wiadomosc[] = new char[50];
-        int dlugosc = 2*(haslo.toCharArray().length + 1);
-        wyjscie.write((char)dlugosc);
-        wyjscie.write(((char)1));
-        wyjscie.write(haslo.toCharArray());
+        int dlugosc = 2 * (haslo.toCharArray().length + 1);
+        wpiszLiczbe2B((short) dlugosc);
+        wpiszLiczbe1B(1);
+        wpiszString(haslo);
+        zakonczWpisywanie();
     }
 
-    private Integer wczytajDlugosc() throws IOException
+    public static int wynikRejestracji()
     {
-        char dane[] = new char[5];
-        wejscie.read(dane, 0, 4);
-        dane[4] = '\0';
-        return Integer.valueOf(new String(dane));
+        return wynikRejestracji;
     }
 
-    private int wczytajKodWejscia() throws IOException
+    private short zwrocDlugosc(byte[] tablica)
     {
-        char dane[] = new char[1];
-        wejscie.read(dane, 0, 1);
-        return Integer.valueOf(new String(dane));
+        return (short) (tablica[0] * 256 + tablica[1]);
     }
 
-    private void wczytajTrescWiadomosci(int dlugosc) throws IOException
+    private void przetworzWiadomosc(String wiadomosc)
     {
-        switch (dlugosc)
+        byte tablica[] = wiadomosc.getBytes();
+        short dlugosc = zwrocDlugosc(tablica);
+        int kod = tablica[2];
+        przetworzTrescWiadomosci(kod, tablica, dlugosc);
+    }
+
+    private void przetworzTrescWiadomosci(int kod, byte[] dane, int dlugosc)
+    {
+        switch (kod)
         {
         case 1: // Rejestracja
+            rejestracjaZwrotne(dane);
             break;
         case 2: // Logowanie
-            logowanieZwrotne();
+            logowanieZwrotne(dane);
             break;
         case 3: // Status
-            statusZwrotny(dlugosc);
+            //statusZwrotny(dane, dlugosc);
             break;
         case 5:
-            odebranieWiadomosci(dlugosc);
+            //odebranieWiadomosci(kod);
             break;
         }
     }
 
-    private int logowanieZwrotne() throws IOException
+    private void rejestracjaZwrotne(byte[] dane)
     {
-        char dane[] = new char[2];
-        wejscie.read(dane, 0, 2);
-        return Integer.valueOf(new String(dane));
+        wynikRejestracji = (short) ((short) dane[3] * 256 + dane[4]);
     }
 
-    private void statusZwrotny(int dlugosc) throws IOException
+    private void logowanieZwrotne(byte[] dane)
+    {
+        wynikLogowania = dane[3];
+    }
+
+    private void statusZwrotny(byte[] dane, int dlugosc) throws IOException
     {
         int idKontaktu;
         int dostepnosc;
@@ -250,20 +287,67 @@ public class WatekSieciowy implements Runnable
         odebraneWiadomosci.clear();
         nadawcy.clear();
     }
-
+    
     private void wyslijDane()
     {
-        if (daneDoLogowania != null)
-            wyslijDaneDoLogowania();
+    //    if (daneDoLogowania != null)
+      //      wyslijDaneDoLogowania();
+    }
+    
+    private static void wpiszLiczbe2B(short dlugosc)
+    {
+        byte tablica[] = new byte[2];
+        tablica[0] = (byte) (dlugosc / 256);
+        tablica[1] = (byte) (dlugosc % 256);
+        try
+        {
+            wyjscie.write(tablica);
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    private void wyslijDaneDoLogowania()
+    private static void wpiszLiczbe1B(int i)
     {
-        wyjscie.println('2' + String.valueOf(daneDoLogowania.getId()) + '3');
+        byte tablica[] = new byte[1];
+        tablica[0] = (byte) i;
+        try
+        {
+            wyjscie.write(tablica);
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    public void wyslijDaneDoRejestracji()
+    private static void wpiszString(String tekst)
     {
-        wyjscie.println('1' + String.valueOf(daneDoLogowania.getId()) + '3');
+        try
+        {
+            wyjscie.write(tekst.getBytes());
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    private static void zakonczWpisywanie()
+    {
+        try
+        {
+            wyjscie.writeTo(outputStream);
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

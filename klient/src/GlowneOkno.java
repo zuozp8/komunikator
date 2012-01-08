@@ -39,6 +39,7 @@ public class GlowneOkno
     private OknoRozmowy oknoRozmowy;
     WatekSieciowy wSiec;
     private OknoOpcji oknoOpcji;
+    private int wynikLogowania;
 
     /**
      * Launch the application.
@@ -56,8 +57,7 @@ public class GlowneOkno
                     .setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
             GlowneOkno window = new GlowneOkno();
             window.frame.setVisible(true);
-            if (window.frame == null)
-                return;
+            if (window.frame == null) return;
         }
         catch (Exception e)
         {
@@ -75,132 +75,14 @@ public class GlowneOkno
     {
         initialize();
 
-        //utworzWatekSieciowy();
-        this.logowanie();
+        utworzOknoOpcji();
+        this.oknoOpcji.setVisible(false);
+        utworzWatekSieciowy();
+        polaczZKontem();
         
         inicjalizujListeKontaktow();
         inicjalizujOknoRozmowy();
-        utworzOknoOpcji();
-        this.oknoOpcji.setVisible(false);
-    }
-
-    private DefaultListModel wczytajDane()
-    {
-        try
-        {
-            File plik = new File(String.valueOf(kontaktJA.getId()));
-            InputStream file = new FileInputStream(plik);
-            InputStream buffer = new BufferedInputStream(file);
-            ObjectInput input = new ObjectInputStream(buffer);
-            kontaktJA = (Kontakt) input.readObject();
-            DefaultListModel kontakty = (DefaultListModel) input.readObject();
-            input.close();
-            return kontakty;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return new DefaultListModel();
-    }
-    
-    public void zapiszDane()
-    {
-        try
-        {
-            File plik = new File(String.valueOf(kontaktJA.getId()));
-            if (!plik.exists())
-                plik.createNewFile();
-            OutputStream file = new FileOutputStream(plik/*
-                                                          * String.valueOf(kontaktJA
-                                                          * .getId())
-                                                          */);
-            file.write((new String()).getBytes());
-            OutputStream buffer = new BufferedOutputStream(file);
-            ObjectOutput output = new ObjectOutputStream(buffer);
-            output.writeObject(this.kontaktJA);
-            output.writeObject(this.listaKontaktow.zwrocKontakty());
-            output.close();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    private void inicjalizujListeKontaktow()
-    {
-        DefaultListModel dane = wczytajDane();
-        listaKontaktow = new ListaKontaktow(this, kontaktJA, dane);
-        JPanel panelListy = utworzPanelListy();
-        dodajPrzewijanie(panelListy);
-    }
-
-    private JPanel utworzPanelListy()
-    {
-        JPanel panelListy = new JPanel(new BorderLayout());
-        panelListy.add(listaKontaktow, BorderLayout.NORTH);
-        panelListy.setBackground(new Color(255, 255, 255));
-        return panelListy;
-    }
-
-    private void dodajPrzewijanie(JPanel panelListy)
-    {
-        JScrollPane pane = new JScrollPane(panelListy);
-        frame.getContentPane().add(pane);
-        pane.setSize(150, 150);
-    }
-
-    private void inicjalizujOknoRozmowy()
-    {
-        oknoRozmowy = new OknoRozmowy();
-        oknoRozmowy.setVisible(false);
-    }
-
-    private void utworzWatekSieciowy()
-    {
-        int port = pobierzPort();
-        String adres = pobierzAdres();
-        wSiec = new WatekSieciowy(adres, port, this.listaKontaktow,
-                this.oknoRozmowy);
-        Thread watek = new Thread(wSiec);
-        watek.start();
-    }
-
-    private String pobierzAdres()
-    {
-        return oknoOpcji.zwrocAdresIP();
-    }
-
-    private int pobierzPort()
-    {
-        return oknoOpcji.zwrocNumerPortu();
-    }
-
-    private void logowanie()
-    {
-        int wynik = 0;
-        while (wynik != 1)
-        {
-            OknoLogowania oknoLogowania = new OknoLogowania(this.frame);
-            int daneUzytkownika = oknoLogowania.zwrocWynik();
-            String haslo = new String(oknoLogowania.zwrocHaslo());
-            if (oknoLogowania.czyRejestracja())
-            {
-                wSiec.zarejestrujSie(haslo);
-            }
-            if (daneUzytkownika > 0)
-            {
-                kontaktJA = new Kontakt("Abel",daneUzytkownika);
-                wynik = 1;
-                wSiec.zalogujSie(daneUzytkownika, haslo);
-                //wSiec.czyUdaloSieLogowanie();
-            }
-            else if (daneUzytkownika == -2)
-            {
-                this.zakoncz();
-            }
-        }
+        
     }
 
     /**
@@ -224,7 +106,7 @@ public class GlowneOkno
 
             public void actionPerformed(ActionEvent e)
             {
-                logowanie();
+                polaczZKontem();
             }
         });
         mnRotlfmao.add(mntmZalogujSie);
@@ -285,10 +167,8 @@ public class GlowneOkno
 
             public void actionPerformed(ActionEvent arg0)
             {
-                if (listaKontaktow.getSelectedIndex() == -1)
-                    bladUsuniecia();
-                else if (czyChceszUsunac())
-                    listaKontaktow.usunKontakt();
+                if (listaKontaktow.getSelectedIndex() == -1) bladUsuniecia();
+                else if (czyChceszUsunac()) listaKontaktow.usunKontakt();
             }
         });
         mnKontakty.add(mntmUsuZnajomego);
@@ -298,6 +178,171 @@ public class GlowneOkno
 
         JMenuItem mntmArchiwum = new JMenuItem("Archiwum");
         mnKontakty.add(mntmArchiwum);
+    }
+
+    private DefaultListModel wczytajDane()
+    {
+        try
+        {
+            File plik = new File(String.valueOf(kontaktJA.getId()));
+            InputStream file = new FileInputStream(plik);
+            InputStream buffer = new BufferedInputStream(file);
+            ObjectInput input = new ObjectInputStream(buffer);
+            kontaktJA = (Kontakt) input.readObject();
+            DefaultListModel kontakty = (DefaultListModel) input.readObject();
+            input.close();
+            return kontakty;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return new DefaultListModel();
+    }
+
+    public void zapiszDane()
+    {
+        try
+        {
+            File plik = new File(String.valueOf(kontaktJA.getId()));
+            if (!plik.exists()) plik.createNewFile();
+            OutputStream file = new FileOutputStream(plik);
+            file.write((new String()).getBytes());
+            OutputStream buffer = new BufferedOutputStream(file);
+            ObjectOutput output = new ObjectOutputStream(buffer);
+            output.writeObject(this.kontaktJA);
+            output.writeObject(this.listaKontaktow.zwrocKontakty());
+            output.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void inicjalizujListeKontaktow()
+    {
+        DefaultListModel dane = wczytajDane();
+        listaKontaktow = new ListaKontaktow(this, kontaktJA, dane);
+        JPanel panelListy = utworzPanelListy();
+        dodajPrzewijanie(panelListy);
+    }
+
+    private JPanel utworzPanelListy()
+    {
+        JPanel panelListy = new JPanel(new BorderLayout());
+        panelListy.add(listaKontaktow, BorderLayout.NORTH);
+        panelListy.setBackground(new Color(255, 255, 255));
+        return panelListy;
+    }
+
+    private void dodajPrzewijanie(JPanel panelListy)
+    {
+        JScrollPane pane = new JScrollPane(panelListy);
+        frame.getContentPane().add(pane);
+        pane.setSize(150, 150);
+    }
+
+    private void inicjalizujOknoRozmowy()
+    {
+        oknoRozmowy = new OknoRozmowy();
+        oknoRozmowy.setVisible(false);
+    }
+
+    private void utworzWatekSieciowy()
+    {
+        int port = pobierzPort();
+        String adres = pobierzAdres();
+        wSiec = new WatekSieciowy(adres, port/*, this.listaKontaktow,
+                this.oknoRozmowy*/);
+        Thread watek = new Thread(wSiec);
+        watek.start();
+    }
+
+    private String pobierzAdres()
+    {
+        return oknoOpcji.zwrocAdresIP();
+    }
+
+    private int pobierzPort()
+    {
+        return oknoOpcji.zwrocNumerPortu();
+    }
+
+    private void polaczZKontem()
+    {
+        int wynik = 0;
+        while (wynik != 1)
+        {
+            OknoLogowania oknoLogowania = new OknoLogowania(this.frame);
+            int daneUzytkownika = oknoLogowania.zwrocWynik();
+            String haslo = new String(oknoLogowania.zwrocHaslo());
+            if (oknoLogowania.czyRejestracja())
+            {
+                rejestracja(haslo);
+            }
+            if (daneUzytkownika > 0)
+            {
+                kontaktJA = new Kontakt("Abel", daneUzytkownika);
+                wynik = logowanie(daneUzytkownika, haslo);
+            }
+            else if (daneUzytkownika == -2)
+            {
+                this.zakoncz();
+            }
+        }
+    }
+
+    private int logowanie(final int daneUzytkownika, final String haslo)
+    {
+        wynikLogowania = -1;
+        EventQueue.invokeLater(new Runnable()
+        {
+            public void run()
+            {
+                try
+                {
+                    WatekSieciowy.zalogujSie(daneUzytkownika, haslo);
+                    while (true)
+                    {
+                        Thread.sleep(100);
+                        wynikLogowania = WatekSieciowy.wynikLogowania();
+                        if (wynikLogowania != -1) break;
+                    }
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
+        return wynikLogowania;
+    }
+
+    private void rejestracja(final String haslo)
+    {
+        EventQueue.invokeLater(new Runnable()
+        {
+
+            public void run()
+            {
+                int id = 0;
+                WatekSieciowy.zarejestrujSie(haslo);
+                while (true)
+                {
+                    try
+                    {
+                        Thread.sleep(100);
+                        id = WatekSieciowy.wynikRejestracji();
+                        if (id != -1) break;
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 
     protected void utworzOknoOpcji()
@@ -325,10 +370,8 @@ public class GlowneOkno
                 "Czy na pewno chcesz usunąć zaznaczony kontakt?",
                 "Czy aby na pewno?", JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
-        if (n == 0)
-            return true;
-        else
-            return false;
+        if (n == 0) return true;
+        else return false;
     }
 
     public void dodajKarteRozmowy(Kontakt osoba)
@@ -345,8 +388,7 @@ public class GlowneOkno
     {
         OknoDodania obiekt = new OknoDodania(this.frame);
         Kontakt osoba = obiekt.zwrocWynik();
-        if (osoba != null)
-            this.listaKontaktow.dodajKontakt(osoba);
+        if (osoba != null) this.listaKontaktow.dodajKontakt(osoba);
     }
 
     protected void edytujZnajomego()
