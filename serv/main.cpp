@@ -231,6 +231,10 @@ int getMaxFd() {
 		if (maxFd < *i)
 			maxFd = *i;
 	}
+	for (map<int,string>::iterator i=writeBuffor.begin(); i!=writeBuffor.end(); i++) {
+		if (maxFd < i->first)
+			maxFd = i->first;
+	}
 	return maxFd;
 }
 
@@ -258,6 +262,7 @@ fd_set getWmask() {
 
 int main(int argc, char* argv[]) {
 	progname = argv[0];
+	pass.push_back("");
 	if (progname.find_last_of('/') != string::npos) {
 		progname.erase(0,progname.find_last_of('/')+1);
 	}
@@ -304,6 +309,7 @@ int main(int argc, char* argv[]) {
 			int fd = current->first;
 			if (FD_ISSET(fd,&fsWmask)) {
 				int writtenBytes = write(fd,current->second.c_str(), current->second.length());
+				// TODO zamykanie połączeń
 				current->second.erase(0,writtenBytes);
 				cerr<<progname<<": written "<<writtenBytes<<" to fd "<<fd
 					<<", "<<current->second.length()<<" bytes left\n";
