@@ -13,6 +13,7 @@
 #include <queue>
 #include <map>
 #include <set>
+#include <algorithm>
 
 #define SERVER_PORT 4790
 #define QUEUE_SIZE 10
@@ -262,7 +263,7 @@ fd_set getWmask() {
 
 int main(int argc, char* argv[]) {
 	progname = argv[0];
-	pass.push_back("");
+	pass.push_back("");//Avoid having user nr 0
 	if (progname.find_last_of('/') != string::npos) {
 		progname.erase(0,progname.find_last_of('/')+1);
 	}
@@ -315,8 +316,13 @@ int main(int argc, char* argv[]) {
 					<<", "<<current->second.length()<<" bytes left\n";
 			}
 			//Delete from writeBuffer, when there is no bytes left to write
-			if (!current->second.length())
+			if (!current->second.length()) {
 				writeBuffor.erase(current);
+				bool isThereLoggedInConnection = false;
+				for_each(connections.begin(), connections.end(), [&](pair<int,int> x){ if (x.second == fd) isThereLoggedInConnection=true;} );
+				if (newConnections.count(fd)==0 && !isThereLoggedInConnection)
+					close(fd);
+			}
 		}
 		
 		/* logged in users */
