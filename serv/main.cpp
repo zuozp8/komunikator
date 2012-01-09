@@ -138,7 +138,7 @@ void login(int fd, string data) {
 		cerr<<progname<<":\t login \n";
 		if(data.length() < 3) {
 		}
-		uint16_t id = unsigned(data[0])*256+unsigned(data[1]);
+		uint16_t id = unsigned(data[0])+unsigned(data[1])*256;
 		if (pass.size()>id && string(data,2)==pass.at(id)) {
 			writeBuffor[fd].push_back(char(2));//Size of message
 			writeBuffor[fd].push_back(char(0));
