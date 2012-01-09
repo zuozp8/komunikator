@@ -14,14 +14,14 @@ import java.util.StringTokenizer;
 
 public class WatekSieciowy implements Runnable
 {
-    int port;
+    static int port;
     boolean polaczony;
-    Socket gniazdo;
-    String adres;
+    static Socket gniazdo;
+    static String adres;
     Kontakt daneDoLogowania;
     ListaKontaktow listaKontaktow;
     OknoRozmowy oknoRozmowy;
-    BufferedReader wejscie;
+    static BufferedReader wejscie;
     ArrayList<Wiadomosc> odebraneWiadomosci = new ArrayList<Wiadomosc>();
     Map<Integer, String> nadawcy = new HashMap<Integer, String>();
     static short wynikLogowania = -1;
@@ -37,9 +37,8 @@ public class WatekSieciowy implements Runnable
         super();
         this.adres = adres;
         this.port = port;
-        //this.listaKontaktow = listaKontaktow;
-        //this.oknoRozmowy = oknoRozmowy;
         polaczony = false;
+        polacz();
     }
 
     @Override
@@ -50,7 +49,7 @@ public class WatekSieciowy implements Runnable
             try
             {
                 Thread.sleep(50);
-                if (!polaczony)
+                if (!gniazdo.isConnected())
                 {
                     polacz();
                 }
@@ -73,7 +72,7 @@ public class WatekSieciowy implements Runnable
 
     }
 
-    private void polacz()
+    private static void polacz()
     {
         try
         {
@@ -83,23 +82,20 @@ public class WatekSieciowy implements Runnable
             wyjscie = new ByteArrayOutputStream();
             wejscie = new BufferedReader(new InputStreamReader(gniazdo
                     .getInputStream()));
-            polaczony = true;
         }
         catch (UnknownHostException e)
         {
-            polaczony = false;
             System.out.println("Nieznany host");
             e.printStackTrace();
         }
         catch (IOException e)
         {
-            polaczony = false;
             System.out.println("Blad odczytu");
             e.printStackTrace();
         }
     }
 
-    private InetAddress zwrocInetAddress(String adres)
+    private static InetAddress zwrocInetAddress(String adres)
     {
         try
         {
@@ -147,6 +143,7 @@ public class WatekSieciowy implements Runnable
         char wiadomosc[] = new char[50];
         char id = (char) daneUzytkownika;
         int dlugosc = 2 * (haslo.toCharArray().length + 1 + 1);
+        if(!gniazdo.isConnected()) polacz();
         wpiszLiczbe2B((short) dlugosc);
         wpiszLiczbe1B(2);
         wpiszLiczbe2B((short) daneUzytkownika);
@@ -164,7 +161,8 @@ public class WatekSieciowy implements Runnable
     public static void zarejestrujSie(String haslo)
     {
         char wiadomosc[] = new char[50];
-        int dlugosc = 2 * (haslo.toCharArray().length + 1);
+        int dlugosc = haslo.getBytes().length + 1;
+        if(!gniazdo.isConnected()) polacz();
         wpiszLiczbe2B((short) dlugosc);
         wpiszLiczbe1B(1);
         wpiszString(haslo);

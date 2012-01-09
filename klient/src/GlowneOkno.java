@@ -332,8 +332,9 @@ public class GlowneOkno
                 {
                     try
                     {
-                        Thread.sleep(100);
+                        Thread.sleep(1000);
                         id = WatekSieciowy.wynikRejestracji();
+                        System.out.println(id);
                         if (id != -1) break;
                     }
                     catch (InterruptedException e)
