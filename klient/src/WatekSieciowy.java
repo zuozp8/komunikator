@@ -295,8 +295,8 @@ public class WatekSieciowy implements Runnable
     private static void wpiszLiczbe2B(short dlugosc)
     {
         byte tablica[] = new byte[2];
-        tablica[0] = (byte) (dlugosc / 256);
-        tablica[1] = (byte) (dlugosc % 256);
+        tablica[1] = (byte) (dlugosc / 256);
+        tablica[0] = (byte) (dlugosc % 256);
         try
         {
             wyjscie.write(tablica);
