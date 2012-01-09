@@ -1,3 +1,6 @@
 *.o
 /klient/bin/*
 /serv/serv
+/serv/nbproject/*
+*.aux
+*.log
