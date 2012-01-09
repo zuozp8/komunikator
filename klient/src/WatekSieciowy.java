@@ -64,9 +64,6 @@ public class WatekSieciowy implements Runnable
                 e.printStackTrace();
                 break;
             }
-            // /////////////////////////////////////////////////
-            break;
-            // /////////////////////////////////////////////
 
         }
 
@@ -176,7 +173,7 @@ public class WatekSieciowy implements Runnable
 
     private short zwrocDlugosc(byte[] tablica)
     {
-        return (short) (tablica[0] * 256 + tablica[1]);
+        return (short) (tablica[1] * 256 + tablica[0]);
     }
 
     private void przetworzWiadomosc(String wiadomosc)
