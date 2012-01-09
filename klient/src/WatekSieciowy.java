@@ -24,8 +24,9 @@ public class WatekSieciowy implements Runnable
     static BufferedReader wejscie;
     ArrayList<Wiadomosc> odebraneWiadomosci = new ArrayList<Wiadomosc>();
     Map<Integer, String> nadawcy = new HashMap<Integer, String>();
-    static short wynikLogowania = -1;
-    static short wynikRejestracji = -1;
+    private boolean flaga;
+    static int wynikLogowania = -1;
+    static int wynikRejestracji = -1;
 
     static OutputStream outputStream;
     static ByteArrayOutputStream wyjscie;
@@ -38,13 +39,14 @@ public class WatekSieciowy implements Runnable
         this.adres = adres;
         this.port = port;
         polaczony = false;
+        flaga = true;
         polacz();
     }
 
     @Override
     public void run()
     {
-        while (true)
+        while (flaga)
         {
             try
             {
@@ -62,11 +64,15 @@ public class WatekSieciowy implements Runnable
             catch (InterruptedException e)
             {
                 e.printStackTrace();
-                break;
             }
 
         }
 
+    }
+    
+    public void wylacz()
+    {
+        flaga = false;
     }
 
     private static void polacz()
@@ -121,13 +127,15 @@ public class WatekSieciowy implements Runnable
         int kod;
         try
         {
-            do
+            while (wejscie.ready())
             {
-                wiadomosc = wejscie.readLine();
-                przetworzWiadomosc(wiadomosc);
-            } while (wejscie.ready());
-            przekazWiadomosci();
-            wyczyscWiadomosci();
+                przetworzWiadomosc();
+            } 
+            if(this.listaWiadomosci.size() > 0)
+            {
+                przekazWiadomosci();
+                wyczyscWiadomosci();
+            }
         }
         catch (IOException e)
         {
@@ -135,15 +143,14 @@ public class WatekSieciowy implements Runnable
         }
     }
 
-    public static int zalogujSie(int daneUzytkownika, String haslo)
+    public static int zalogujSie(short daneUzytkownika, String haslo)
     {
-        char wiadomosc[] = new char[50];
         char id = (char) daneUzytkownika;
-        int dlugosc = 2 * (haslo.toCharArray().length + 1 + 1);
+        int dlugosc = 2 + haslo.getBytes().length + 1;
         if(!gniazdo.isConnected()) polacz();
         wpiszLiczbe2B((short) dlugosc);
         wpiszLiczbe1B(2);
-        wpiszLiczbe2B((short) daneUzytkownika);
+        wpiszLiczbe2B(daneUzytkownika);
         wpiszString(haslo);
         zakonczWpisywanie();
         return 0;
@@ -157,7 +164,6 @@ public class WatekSieciowy implements Runnable
 
     public static void zarejestrujSie(String haslo)
     {
-        char wiadomosc[] = new char[50];
         int dlugosc = haslo.getBytes().length + 1;
         if(!gniazdo.isConnected()) polacz();
         wpiszLiczbe2B((short) dlugosc);
@@ -176,23 +182,22 @@ public class WatekSieciowy implements Runnable
         return (short) (tablica[1] * 256 + tablica[0]);
     }
 
-    private void przetworzWiadomosc(String wiadomosc)
+    private void przetworzWiadomosc()
     {
-        byte tablica[] = wiadomosc.getBytes();
-        short dlugosc = zwrocDlugosc(tablica);
-        int kod = tablica[2];
-        przetworzTrescWiadomosci(kod, tablica, dlugosc);
+        int dlugosc = wczytajLiczbe2B();
+        int kod = wczytajLiczbe1B();
+        przetworzTrescWiadomosci(kod, dlugosc);
     }
 
-    private void przetworzTrescWiadomosci(int kod, byte[] dane, int dlugosc)
+    private void przetworzTrescWiadomosci(int kod, int dlugosc)
     {
         switch (kod)
         {
         case 1: // Rejestracja
-            rejestracjaZwrotne(dane);
+            rejestracjaZwrotne();
             break;
         case 2: // Logowanie
-            logowanieZwrotne(dane);
+            logowanieZwrotne();
             break;
         case 3: // Status
             //statusZwrotny(dane, dlugosc);
@@ -203,14 +208,14 @@ public class WatekSieciowy implements Runnable
         }
     }
 
-    private void rejestracjaZwrotne(byte[] dane)
+    private void rejestracjaZwrotne()
     {
-        wynikRejestracji = (short) ((short) dane[3] * 256 + dane[4]);
+        wynikRejestracji = wczytajLiczbe2B();
     }
 
-    private void logowanieZwrotne(byte[] dane)
+    private void logowanieZwrotne()
     {
-        wynikLogowania = dane[3];
+        wynikLogowania = wczytajLiczbe1B();
     }
 
     private void statusZwrotny(byte[] dane, int dlugosc) throws IOException
@@ -287,6 +292,37 @@ public class WatekSieciowy implements Runnable
     {
     //    if (daneDoLogowania != null)
       //      wyslijDaneDoLogowania();
+    }
+
+    private int wczytajLiczbe2B()
+    {
+        try
+        {
+            int l1, l2;
+            l1 = wejscie.read();
+            l2 = wejscie.read();
+            return l1 + l2*256;
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return -1;
+    }
+    
+    private int wczytajLiczbe1B()
+    {
+        try
+        {
+            return wejscie.read();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return -1;
     }
     
     private static void wpiszLiczbe2B(short dlugosc)

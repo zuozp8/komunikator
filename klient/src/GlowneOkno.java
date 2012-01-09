@@ -40,6 +40,7 @@ public class GlowneOkno
     WatekSieciowy wSiec;
     private OknoOpcji oknoOpcji;
     private int wynikLogowania;
+    private Thread watekWS;
 
     /**
      * Launch the application.
@@ -255,8 +256,8 @@ public class GlowneOkno
         String adres = pobierzAdres();
         wSiec = new WatekSieciowy(adres, port/*, this.listaKontaktow,
                 this.oknoRozmowy*/);
-        Thread watek = new Thread(wSiec);
-        watek.start();
+        watekWS = new Thread(wSiec);
+        watekWS.start();
     }
 
     private String pobierzAdres()
@@ -302,7 +303,7 @@ public class GlowneOkno
             {
                 try
                 {
-                    WatekSieciowy.zalogujSie(daneUzytkownika, haslo);
+                    WatekSieciowy.zalogujSie((short) daneUzytkownika, haslo);
                     while (true)
                     {
                         Thread.sleep(100);
@@ -408,6 +409,7 @@ public class GlowneOkno
 
     protected void zakoncz()
     {
+        this.wSiec.wylacz();
         this.oknoRozmowy.dispose();
         this.zapiszDane();
         frame.setVisible(false);
