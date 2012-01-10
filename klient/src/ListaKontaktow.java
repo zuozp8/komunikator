@@ -159,7 +159,7 @@ public class ListaKontaktow extends JList implements MouseListener
 
         int numer = this.locationToIndex(arg0.getPoint());
         Kontakt osoba = (Kontakt) kontakty.get(numer);
-        if (!osoba.czyKonwersacja())
+        if (!osoba.czyKonwersacja() || (osoba.czyKonwersacja() && osoba.getId() == kontaktJA.getId()))
         {
             osoba.setKonwersacja(true);
             this.parent.dodajKarteRozmowy(osoba);
