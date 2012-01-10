@@ -219,6 +219,9 @@ public class WatekSieciowy implements Runnable
     private void rejestracjaZwrotne()
     {
         wynikRejestracji = wczytajLiczbe2B();
+        try {
+        	gniazdo.close();
+        } catch (IOException e) {}
     }
 
     private void logowanieZwrotne()
