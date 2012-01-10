@@ -176,9 +176,10 @@ void talkWithClient(int id, string data) {
 				throw "wrong data size";
 			}
 			string response;
-			int responseSize = 3*data.length()/2;
+			int responseSize = 1+3*data.length()/2;
 			response.push_back(responseSize);
 			response.push_back(responseSize/256);
+			response.push_back(3);
 			for (uint16_t i=0; i<data.length(); i+=2) {
 				response.push_back(data[0]);
 				response.push_back(data[1]);
@@ -200,8 +201,9 @@ void talkWithClient(int id, string data) {
 				throw "wrong reciever";
 			}
 			string response;
-			response.push_back((data.size()+2));
-			response.push_back((data.size()+2)/256);
+			response.push_back((data.size()+3));
+			response.push_back((data.size()+3)/256);
+			response.push_back(5);//CODE
 			response.push_back(id);
 			response.push_back(id/256);
 			response.append(data);
