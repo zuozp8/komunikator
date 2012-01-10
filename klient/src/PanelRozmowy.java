@@ -33,7 +33,7 @@ class PanelRozmowy extends JPanel
 	private JScrollPane panelWiadomosci;
 	private JButton wyslij;
 	
-	private Kontakt obecnyUzytkownik;
+	private Kontakt kontaktJA;
 	private Kontakt rozmowca;
 
 	private int id;
@@ -41,8 +41,9 @@ class PanelRozmowy extends JPanel
 	private StyledDocument doc;
 	private Style regular;
 	private Style bold;
+    //private Kontakt kontaktJA;
 
-	public PanelRozmowy(Kontakt osoba)
+	public PanelRozmowy(Kontakt osoba, Kontakt ja)
 	{
 		super();
 		setSize(myWidth, myHeight);
@@ -52,7 +53,7 @@ class PanelRozmowy extends JPanel
 		dodajPrzyciskWyslania(); 
 		
 		rozmowca = osoba;
-		obecnyUzytkownik = new Kontakt("Ja",0);
+		kontaktJA = ja;
 
 		ustawLayout();
 		utworzStyle();
@@ -162,7 +163,7 @@ class PanelRozmowy extends JPanel
 	{
 		String wiadomosc = this.poleWiadomosci.getText()+"\n";
 		wyczyscPoleWiadomosci();
-		// wyslijWiadomoscDoRozmowcy(wiadomosc);
+		WatekSieciowy.dodajWiadomosc(wiadomosc,zwrocObecnyCzas(),rozmowca);
 		wyslijWiadomoscDoPolaRozmowy(wiadomosc, false);
 	}
 
@@ -188,7 +189,7 @@ class PanelRozmowy extends JPanel
 	{
 		String poczatek = new String();
  	   	if(!przychodzaca)
- 	   		poczatek += this.obecnyUzytkownik.getNazwa() + " " + this.zwrocObecnyCzas() + " :\n ";
+ 	   		poczatek += this.kontaktJA.getNazwa() + " " + this.zwrocObecnyCzas() + " :\n ";
  	   	else
  	   		poczatek += this.rozmowca.getNazwa() + " " + this.zwrocObecnyCzas() + " :\n ";
 		return poczatek;

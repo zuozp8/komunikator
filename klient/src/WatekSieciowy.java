@@ -14,6 +14,12 @@ import java.util.StringTokenizer;
 
 public class WatekSieciowy implements Runnable
 {
+
+    static final short REJESTRACJA = 1;
+    static final short LOGOWANIE = 2;
+    static final short STAN_ZNAJOMYCH = 3;
+    static final short OBSLUGA_WIADOMOSCI = 5;
+
     static int port;
     boolean polaczony;
     static Socket gniazdo;
@@ -32,8 +38,11 @@ public class WatekSieciowy implements Runnable
     static ByteArrayOutputStream wyjscie;
     static ArrayList<Wiadomosc> listaWiadomosci = new ArrayList<Wiadomosc>();
 
-    public WatekSieciowy(String adres, int port/*, ListaKontaktow listaKontaktow,
-            OknoRozmowy oknoRozmowy*/)
+    public WatekSieciowy(String adres, int port/*
+                                                * , ListaKontaktow
+                                                * listaKontaktow, OknoRozmowy
+                                                * oknoRozmowy
+                                                */)
     {
         super();
         this.adres = adres;
@@ -69,7 +78,7 @@ public class WatekSieciowy implements Runnable
         }
 
     }
-    
+
     public void wylacz()
     {
         flaga = false;
@@ -79,7 +88,7 @@ public class WatekSieciowy implements Runnable
     {
         try
         {
-            InetAddress inAddress= zwrocInetAddress(adres);
+            InetAddress inAddress = zwrocInetAddress(adres);
             gniazdo = new Socket(inAddress, port);
             outputStream = gniazdo.getOutputStream();
             wyjscie = new ByteArrayOutputStream();
@@ -104,10 +113,10 @@ public class WatekSieciowy implements Runnable
         {
             int licznik = 0;
             byte tablica[] = new byte[4];
-            StringTokenizer st = new StringTokenizer(adres,".");
-            while(st.hasMoreTokens())
+            StringTokenizer st = new StringTokenizer(adres, ".");
+            while (st.hasMoreTokens())
             {
-                tablica[licznik] = (byte)(int)Integer.valueOf(st.nextToken());
+                tablica[licznik] = (byte) (int) Integer.valueOf(st.nextToken());
                 licznik++;
             }
             return InetAddress.getByAddress(tablica);
@@ -130,8 +139,8 @@ public class WatekSieciowy implements Runnable
             while (wejscie.ready())
             {
                 przetworzWiadomosc();
-            } 
-            if(this.listaWiadomosci.size() > 0)
+            }
+            if (odebraneWiadomosci.size() > 0)
             {
                 przekazWiadomosci();
                 wyczyscWiadomosci();
@@ -147,9 +156,9 @@ public class WatekSieciowy implements Runnable
     {
         char id = (char) daneUzytkownika;
         int dlugosc = 2 + haslo.getBytes().length + 1;
-        if(!gniazdo.isConnected()) polacz();
+        if (!gniazdo.isConnected()) polacz();
         wpiszLiczbe2B((short) dlugosc);
-        wpiszLiczbe1B(2);
+        wpiszLiczbe1B(WatekSieciowy.LOGOWANIE);
         wpiszLiczbe2B(daneUzytkownika);
         wpiszString(haslo);
         zakonczWpisywanie();
@@ -158,16 +167,16 @@ public class WatekSieciowy implements Runnable
 
     public static int wynikLogowania()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        if (!gniazdo.isConnected()) return 0;
+        else return wynikLogowania;
     }
 
     public static void zarejestrujSie(String haslo)
     {
         int dlugosc = haslo.getBytes().length + 1;
-        if(!gniazdo.isConnected()) polacz();
+        if (!gniazdo.isConnected()) polacz();
         wpiszLiczbe2B((short) dlugosc);
-        wpiszLiczbe1B(1);
+        wpiszLiczbe1B(WatekSieciowy.REJESTRACJA);
         wpiszString(haslo);
         zakonczWpisywanie();
     }
@@ -193,17 +202,17 @@ public class WatekSieciowy implements Runnable
     {
         switch (kod)
         {
-        case 1: // Rejestracja
+        case WatekSieciowy.REJESTRACJA:
             rejestracjaZwrotne();
             break;
-        case 2: // Logowanie
+        case WatekSieciowy.LOGOWANIE: // Logowanie
             logowanieZwrotne();
             break;
-        case 3: // Status
-            //statusZwrotny(dane, dlugosc);
+        case WatekSieciowy.STAN_ZNAJOMYCH: // Status
+            // statusZwrotny(dane, dlugosc);
             break;
-        case 5:
-            //odebranieWiadomosci(kod);
+        case WatekSieciowy.OBSLUGA_WIADOMOSCI:
+            // odebranieWiadomosci(kod);
             break;
         }
     }
@@ -287,11 +296,31 @@ public class WatekSieciowy implements Runnable
         odebraneWiadomosci.clear();
         nadawcy.clear();
     }
-    
+
     private void wyslijDane()
     {
-    //    if (daneDoLogowania != null)
-      //      wyslijDaneDoLogowania();
+        if (listaWiadomosci.size() > 0)
+        {
+            for (Wiadomosc wiadomosc : this.listaWiadomosci)
+            {
+                wpiszWiadomoscNaWyjscie(wiadomosc);
+            }
+            zakonczWpisywanie();
+            listaWiadomosci.clear();
+        }
+    }
+
+    private void wpiszWiadomoscNaWyjscie(Wiadomosc wiadomosc)
+    {
+        byte tresc[] = wiadomosc.zwrocTresc().getBytes();
+        byte czas[] = wiadomosc.zwrocCzas().getBytes();
+        short id = (short) wiadomosc.getOdbiorca().getId();
+        short dlugosc = (short) (tresc.length /*+ czas.length*/ + 3);
+        wpiszLiczbe2B(dlugosc);
+        wpiszLiczbe1B(WatekSieciowy.OBSLUGA_WIADOMOSCI);
+        wpiszLiczbe2B(id);
+        // wpiszString(wiadomosc.zwrocCzas());
+        wpiszString(wiadomosc.zwrocTresc());
     }
 
     private int wczytajLiczbe2B()
@@ -301,7 +330,7 @@ public class WatekSieciowy implements Runnable
             int l1, l2;
             l1 = wejscie.read();
             l2 = wejscie.read();
-            return l1 + l2*256;
+            return l1 + l2 * 256;
         }
         catch (IOException e)
         {
@@ -310,7 +339,7 @@ public class WatekSieciowy implements Runnable
         }
         return -1;
     }
-    
+
     private int wczytajLiczbe1B()
     {
         try
@@ -324,7 +353,7 @@ public class WatekSieciowy implements Runnable
         }
         return -1;
     }
-    
+
     private static void wpiszLiczbe2B(short dlugosc)
     {
         byte tablica[] = new byte[2];
@@ -374,11 +403,20 @@ public class WatekSieciowy implements Runnable
         try
         {
             wyjscie.writeTo(outputStream);
+            wyjscie.reset();
         }
         catch (IOException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    public static void dodajWiadomosc(String tresc, String zwrocObecnyCzas,
+            Kontakt rozmowca)
+    {
+        Wiadomosc wiadomosc = new Wiadomosc(null, tresc, zwrocObecnyCzas);
+        wiadomosc.setOdbiorca(rozmowca);
+        listaWiadomosci.add(wiadomosc);
     }
 }

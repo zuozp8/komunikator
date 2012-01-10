@@ -83,7 +83,7 @@ public class GlowneOkno
         
         inicjalizujListeKontaktow();
         inicjalizujOknoRozmowy();
-        
+        kontaktJA.czyKonwersacja();
     }
 
     /**
@@ -246,7 +246,7 @@ public class GlowneOkno
 
     private void inicjalizujOknoRozmowy()
     {
-        oknoRozmowy = new OknoRozmowy();
+        oknoRozmowy = new OknoRozmowy(kontaktJA);
         oknoRozmowy.setVisible(false);
     }
 
@@ -282,9 +282,9 @@ public class GlowneOkno
             {
                 rejestracja(haslo);
             }
-            if (daneUzytkownika > 0)
+            else if (daneUzytkownika > 0)
             {
-                kontaktJA = new Kontakt("Abel", daneUzytkownika);
+                kontaktJA = new Kontakt("Ja", daneUzytkownika);
                 wynik = logowanie(daneUzytkownika, haslo);
             }
             else if (daneUzytkownika == -2)
@@ -296,8 +296,7 @@ public class GlowneOkno
 
     private int logowanie(final int daneUzytkownika, final String haslo)
     {
-        wynikLogowania = -1;
-        EventQueue.invokeLater(new Runnable()
+        /*EventQueue.invokeLater(new Runnable()
         {
             public void run()
             {
@@ -316,7 +315,23 @@ public class GlowneOkno
                     e.printStackTrace();
                 }
             }
-        });
+        });*/
+        int wynikLogowania = -1;
+        try
+        {
+            WatekSieciowy.zalogujSie((short) daneUzytkownika, haslo);
+            while (true)
+            {
+                Thread.sleep(100);
+                wynikLogowania = WatekSieciowy.wynikLogowania();
+                if (wynikLogowania != -1) break;
+            }
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+        System.out.println(wynikLogowania);
         return wynikLogowania;
     }
 
@@ -345,6 +360,8 @@ public class GlowneOkno
                 }
             }
         });
+       // return WatekSieciowy.wynikRejestracji();
+        return;
     }
 
     protected void utworzOknoOpcji()

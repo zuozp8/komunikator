@@ -34,19 +34,20 @@ public class OknoRozmowy extends JFrame
 	private JTabbedPane zbiorZakladek = new JTabbedPane();
 	private DefaultListModel ukryteZakladki = new DefaultListModel();
 	Map<Integer, Integer> mapaPolozeniaRozmow = new HashMap<Integer, Integer>();
+    private Kontakt kontaktJA;
 
-	public OknoRozmowy() throws HeadlessException
+	public OknoRozmowy(Kontakt kontaktJA) throws HeadlessException
 	{
 		super();
 		setSize(500, 400);
-		
+		this.kontaktJA = kontaktJA;
 		add(zbiorZakladek);
 		this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 	}
 
 	public void dodajRozmowe(Kontakt osoba)
 	{
-		PanelRozmowy nowa = new PanelRozmowy(osoba);
+		PanelRozmowy nowa = new PanelRozmowy(osoba, kontaktJA );
 		nowa.ustawId(osoba.getId());
 		zbiorZakladek.addTab(osoba.getNazwa(), nowa);
 		zbiorZakladek.setTabComponentAt(zbiorZakladek.getTabCount()-1, 
