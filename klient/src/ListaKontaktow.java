@@ -35,7 +35,12 @@ public class ListaKontaktow extends JList implements MouseListener
         this.setVisibleRowCount(4);
         this.setCellRenderer(new ZnajomiCellRenderer());
         addMouseListener(this);
-        //wczytajDane();
+        zgloszenieDoOdpytywania();
+    }
+
+    private void zgloszenieDoOdpytywania()
+    {
+        WatekSieciowy.zgloszenieDoOdpytywania(this);
     }
 
     public ListaKontaktow(ListModel dataModel)
@@ -133,6 +138,17 @@ public class ListaKontaktow extends JList implements MouseListener
     public DefaultListModel zwrocKontakty()
     {
         return kontakty;
+    }
+    
+    public short[] zwrocTabliceID()
+    {
+        short[] tablica = new short[kontakty.size()];
+        for(int i=0; i<kontakty.size();i++)
+        {
+            tablica[i] = (short)((Kontakt)kontakty.get(i)).getId();
+        }
+        return tablica;
+        
     }
 
     @Override

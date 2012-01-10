@@ -25,7 +25,7 @@ public class WatekSieciowy implements Runnable
     static Socket gniazdo;
     static String adres;
     Kontakt daneDoLogowania;
-    ListaKontaktow listaKontaktow;
+    static ListaKontaktow listaKontaktow;
     OknoRozmowy oknoRozmowy;
     static BufferedReader wejscie;
     ArrayList<Wiadomosc> odebraneWiadomosci = new ArrayList<Wiadomosc>();
@@ -33,16 +33,14 @@ public class WatekSieciowy implements Runnable
     private boolean flaga;
     static int wynikLogowania = -1;
     static int wynikRejestracji = -1;
+    static int licznikOD = 0;
 
     static OutputStream outputStream;
     static ByteArrayOutputStream wyjscie;
     static ArrayList<Wiadomosc> listaWiadomosci = new ArrayList<Wiadomosc>();
+    private static boolean flagaOdpytywaniaKontaktow = false;
 
-    public WatekSieciowy(String adres, int port/*
-                                                * , ListaKontaktow
-                                                * listaKontaktow, OknoRozmowy
-                                                * oknoRozmowy
-                                                */)
+    public WatekSieciowy(String adres, int port)
     {
         super();
         this.adres = adres;
@@ -66,6 +64,7 @@ public class WatekSieciowy implements Runnable
                 }
                 else
                 {
+                    licznikOD++;
                     odczytajDane();
                     wyslijDane();
                 }
@@ -205,11 +204,11 @@ public class WatekSieciowy implements Runnable
         case WatekSieciowy.REJESTRACJA:
             rejestracjaZwrotne();
             break;
-        case WatekSieciowy.LOGOWANIE: // Logowanie
+        case WatekSieciowy.LOGOWANIE:
             logowanieZwrotne();
             break;
-        case WatekSieciowy.STAN_ZNAJOMYCH: // Status
-            // statusZwrotny(dane, dlugosc);
+        case WatekSieciowy.STAN_ZNAJOMYCH:
+            statusZwrotny(dlugosc);
             break;
         case WatekSieciowy.OBSLUGA_WIADOMOSCI:
             // odebranieWiadomosci(kod);
@@ -227,21 +226,16 @@ public class WatekSieciowy implements Runnable
         wynikLogowania = wczytajLiczbe1B();
     }
 
-    private void statusZwrotny(byte[] dane, int dlugosc) throws IOException
+    private void statusZwrotny(int dlugosc)
     {
         int idKontaktu;
         int dostepnosc;
-        int licznik = dlugosc / 3;
-        char id[] = new char[2];
-        char stan[] = new char[1];
+        int licznik = (dlugosc-1) / 3;
         Map<Integer, Integer> mapa = new HashMap<Integer, Integer>();
         while (licznik > 0)
         {
-            wejscie.read(id, 0, 2);
-            idKontaktu = Integer.valueOf(new String(id));
-            wejscie.read(stan, 0, 1);
-            id[1] = '\0';
-            dostepnosc = Integer.valueOf(new String(stan));
+            idKontaktu = wczytajLiczbe2B();
+            dostepnosc = wczytajLiczbe1B();
             mapa.put(idKontaktu, dostepnosc);
             licznik--;
         }
@@ -305,8 +299,25 @@ public class WatekSieciowy implements Runnable
             {
                 wpiszWiadomoscNaWyjscie(wiadomosc);
             }
-            zakonczWpisywanie();
             listaWiadomosci.clear();
+        }
+        if(flagaOdpytywaniaKontaktow && licznikOD>100)
+        {
+            wyslijZapytanieOStanKontaktow();
+            licznikOD =0;
+        }
+        zakonczWpisywanie();
+    }
+
+    private void wyslijZapytanieOStanKontaktow()
+    {
+        short tablica[] = WatekSieciowy.listaKontaktow.zwrocTabliceID();
+        short dlugosc = (short) (2*tablica.length + 1);
+        wpiszLiczbe2B(dlugosc);
+        wpiszLiczbe1B(WatekSieciowy.STAN_ZNAJOMYCH);
+        for(int i=0;i<tablica.length;i++)
+        {
+            wpiszLiczbe2B(tablica[i]);
         }
     }
 
@@ -334,7 +345,6 @@ public class WatekSieciowy implements Runnable
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return -1;
@@ -348,7 +358,6 @@ public class WatekSieciowy implements Runnable
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return -1;
@@ -365,7 +374,6 @@ public class WatekSieciowy implements Runnable
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -380,7 +388,6 @@ public class WatekSieciowy implements Runnable
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -393,7 +400,6 @@ public class WatekSieciowy implements Runnable
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -407,7 +413,6 @@ public class WatekSieciowy implements Runnable
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -418,5 +423,11 @@ public class WatekSieciowy implements Runnable
         Wiadomosc wiadomosc = new Wiadomosc(null, tresc, zwrocObecnyCzas);
         wiadomosc.setOdbiorca(rozmowca);
         listaWiadomosci.add(wiadomosc);
+    }
+    
+    public static void zgloszenieDoOdpytywania(ListaKontaktow lista)
+    {
+        WatekSieciowy.listaKontaktow = lista;
+        flagaOdpytywaniaKontaktow = true;
     }
 }
