@@ -181,9 +181,9 @@ void talkWithClient(int id, string data) {
 			response.push_back(responseSize/256);
 			response.push_back(3);
 			for (uint16_t i=0; i<data.length(); i+=2) {
-				response.push_back(data[0]);
-				response.push_back(data[1]);
-				int checkedId=unsigned(data[1])*256+unsigned(data[0]);
+				response.push_back(data[i]);
+				response.push_back(data[i+1]);
+				int checkedId=unsigned(data[i+1])*256+unsigned(data[i]);
 				char status = connections.count(checkedId);
 				response.push_back(status);
 			}
