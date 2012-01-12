@@ -161,7 +161,9 @@ class PanelRozmowy extends JPanel
 
 	private void wyslijWiadomosc()
 	{
-		String wiadomosc = this.poleWiadomosci.getText()+"\n";
+		String wiadomosc = this.poleWiadomosci.getText();
+		if(wiadomosc.trim().length() == 0) return;
+		else wiadomosc += "\n";
 		wyczyscPoleWiadomosci();
 		WatekSieciowy.dodajWiadomosc(wiadomosc,zwrocObecnyCzas(),rozmowca);
 		wyslijWiadomoscDoPolaRozmowy(wiadomosc, false);
@@ -188,6 +190,7 @@ class PanelRozmowy extends JPanel
 	private String stworzRozpoczecieWiadomosci(boolean przychodzaca)
 	{
 		String poczatek = new String();
+		if(this.poleRozmowy.getText().length() > 0) poczatek = "\n";
  	   	if(!przychodzaca)
  	   		poczatek += this.kontaktJA.getNazwa() + " " + this.zwrocObecnyCzas() + " :\n ";
  	   	else
@@ -230,4 +233,5 @@ class PanelRozmowy extends JPanel
 	{
 		return this.rozmowca.getNazwa();
 	}
+
 }

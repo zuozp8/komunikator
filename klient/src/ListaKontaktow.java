@@ -53,8 +53,10 @@ public class ListaKontaktow extends JList implements MouseListener
     {
         int licznik = 0;
         Set<Integer> zbiorKluczy = mapa.keySet();
+        System.out.println("Wyniki: ");
         for (int id : zbiorKluczy)
         {
+            System.out.println(id + " " + mapa.get(id));
             ustawStan(id, mapa.get(id));
         }
     }
@@ -86,7 +88,10 @@ public class ListaKontaktow extends JList implements MouseListener
                 return kontakt.getNazwa();
             }
         }
-        return "Nieznany " + String.valueOf(idKontaktu);
+        String nowyNick = "Nieznany " + String.valueOf(idKontaktu);
+        Kontakt nieznany = new Kontakt(nowyNick, idKontaktu);
+        dodajKontakt(nieznany);
+        return nowyNick;
     }
 
     public Kontakt zwrocZaznaczonyKontakt()
@@ -198,5 +203,16 @@ public class ListaKontaktow extends JList implements MouseListener
     {
         // TODO Auto-generated method stub
 
+    }
+
+    public DefaultListModel zwrocKontaktyDoZapisu()
+    {
+        Kontakt osoba;
+        for(int i=0; i<kontakty.size();i++)
+        {
+            osoba = (Kontakt) kontakty.get(i);
+            osoba.setKonwersacja(false);
+        }
+        return kontakty;
     }
 }

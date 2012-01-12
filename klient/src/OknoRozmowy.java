@@ -43,9 +43,15 @@ public class OknoRozmowy extends JFrame
 		this.kontaktJA = kontaktJA;
 		add(zbiorZakladek);
 		this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		zgloszenieDoOdczytywaniaWiadomosci();
 	}
 
-	public void dodajRozmowe(Kontakt osoba)
+	private void zgloszenieDoOdczytywaniaWiadomosci()
+    {
+        WatekSieciowy.zgloszenieDoOdbieraniaWiadomosci(this);
+    }
+
+    public void dodajRozmowe(Kontakt osoba)
 	{
 		PanelRozmowy nowa = new PanelRozmowy(osoba, kontaktJA );
 		nowa.ustawId(osoba.getId());
@@ -111,6 +117,7 @@ public class OknoRozmowy extends JFrame
         PanelRozmowy panelRozmowy;
         Wiadomosc wiadomosc,wiadomoscDruga;
         ArrayList<Wiadomosc> wiadomosciTenSamNadawca = new ArrayList<Wiadomosc>();
+        this.setVisible(true);
         for(int i=0; i < odebraneWiadomosci.size() ; i++)
         {
             wiadomosc = odebraneWiadomosci.get(i);

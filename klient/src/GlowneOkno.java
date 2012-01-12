@@ -80,7 +80,7 @@ public class GlowneOkno
         this.oknoOpcji.setVisible(false);
         utworzWatekSieciowy();
         polaczZKontem();
-        
+
         inicjalizujListeKontaktow();
         inicjalizujOknoRozmowy();
         kontaktJA.czyKonwersacja();
@@ -212,7 +212,7 @@ public class GlowneOkno
             OutputStream buffer = new BufferedOutputStream(file);
             ObjectOutput output = new ObjectOutputStream(buffer);
             output.writeObject(this.kontaktJA);
-            output.writeObject(this.listaKontaktow.zwrocKontakty());
+            output.writeObject(this.listaKontaktow.zwrocKontaktyDoZapisu());
             output.close();
         }
         catch (Exception e)
@@ -254,8 +254,7 @@ public class GlowneOkno
     {
         int port = pobierzPort();
         String adres = pobierzAdres();
-        wSiec = new WatekSieciowy(adres, port/*, this.listaKontaktow,
-                this.oknoRozmowy*/);
+        wSiec = new WatekSieciowy(adres, port);
         watekWS = new Thread(wSiec);
         watekWS.start();
     }
@@ -296,26 +295,6 @@ public class GlowneOkno
 
     private int logowanie(final int daneUzytkownika, final String haslo)
     {
-        /*EventQueue.invokeLater(new Runnable()
-        {
-            public void run()
-            {
-                try
-                {
-                    WatekSieciowy.zalogujSie((short) daneUzytkownika, haslo);
-                    while (true)
-                    {
-                        Thread.sleep(100);
-                        wynikLogowania = WatekSieciowy.wynikLogowania();
-                        if (wynikLogowania != -1) break;
-                    }
-                }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        });*/
         int wynikLogowania = -1;
         try
         {
@@ -337,31 +316,42 @@ public class GlowneOkno
 
     private void rejestracja(final String haslo)
     {
-        EventQueue.invokeLater(new Runnable()
+        /*
+         * EventQueue.invokeLater(new Runnable() {
+         * 
+         * public void run() {
+         */
+        int id = 0;
+        WatekSieciowy.zarejestrujSie(haslo);
+        try
         {
-
-            public void run()
+            while (true)
             {
-                int id = 0;
-                WatekSieciowy.zarejestrujSie(haslo);
-                while (true)
-                {
-                    try
-                    {
-                        Thread.sleep(1000);
-                        id = WatekSieciowy.wynikRejestracji();
-                        System.out.println(id);
-                        if (id != -1) break;
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
+                Thread.sleep(1000);
+                id = WatekSieciowy.wynikRejestracji();
+                System.out.println(id);
+                if (id != -1) break;
             }
-        });
-       // return WatekSieciowy.wynikRejestracji();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+        if(id> 0) poprawnaRejestracja(id);
+        else bladRejestracji();
+        // }
+        // });
         return;
+    }
+
+    private void poprawnaRejestracja(int id)
+    {
+        JOptionPane.showMessageDialog(frame, "Zarejestrowałęś się poprawnie. Twoje id: " + id);
+    }
+
+    private void bladRejestracji()
+    {
+        JOptionPane.showMessageDialog(frame, "Błędna rejestracja. Spróbuj jeszcze raz");
     }
 
     protected void utworzOknoOpcji()

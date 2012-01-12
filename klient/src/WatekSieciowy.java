@@ -26,11 +26,11 @@ public class WatekSieciowy implements Runnable
     static String adres;
     Kontakt daneDoLogowania;
     static ListaKontaktow listaKontaktow;
-    OknoRozmowy oknoRozmowy;
+    static OknoRozmowy oknoRozmowy;
     static BufferedReader wejscie;
     ArrayList<Wiadomosc> odebraneWiadomosci = new ArrayList<Wiadomosc>();
     Map<Integer, String> nadawcy = new HashMap<Integer, String>();
-    private boolean flaga;
+    private static boolean flaga;
     static int wynikLogowania = -1;
     static int wynikRejestracji = -1;
     static int licznikOD = 0;
@@ -39,6 +39,7 @@ public class WatekSieciowy implements Runnable
     static ByteArrayOutputStream wyjscie;
     static ArrayList<Wiadomosc> listaWiadomosci = new ArrayList<Wiadomosc>();
     private static boolean flagaOdpytywaniaKontaktow = false;
+    private static boolean flagaObieraniaRozmow = false;
 
     public WatekSieciowy(String adres, int port)
     {
@@ -78,9 +79,18 @@ public class WatekSieciowy implements Runnable
 
     }
 
-    public void wylacz()
+    public static void wylacz()
     {
         flaga = false;
+        try
+        {
+            gniazdo.close();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     private static void polacz()
@@ -105,6 +115,8 @@ public class WatekSieciowy implements Runnable
             e.printStackTrace();
         }
     }
+    
+    
 
     private static InetAddress zwrocInetAddress(String adres)
     {
@@ -122,7 +134,6 @@ public class WatekSieciowy implements Runnable
         }
         catch (UnknownHostException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return null;
@@ -155,7 +166,7 @@ public class WatekSieciowy implements Runnable
     {
         char id = (char) daneUzytkownika;
         int dlugosc = 2 + haslo.getBytes().length + 1;
-        if (!gniazdo.isConnected()) polacz();
+        if (!gniazdo.isConnected() || gniazdo.isClosed()) polacz();
         wpiszLiczbe2B((short) dlugosc);
         wpiszLiczbe1B(WatekSieciowy.LOGOWANIE);
         wpiszLiczbe2B(daneUzytkownika);
@@ -173,7 +184,7 @@ public class WatekSieciowy implements Runnable
     public static void zarejestrujSie(String haslo)
     {
         int dlugosc = haslo.getBytes().length + 1;
-        if (!gniazdo.isConnected()) polacz();
+        if (!gniazdo.isConnected() || gniazdo.isClosed()) polacz();
         wpiszLiczbe2B((short) dlugosc);
         wpiszLiczbe1B(WatekSieciowy.REJESTRACJA);
         wpiszString(haslo);
@@ -211,7 +222,7 @@ public class WatekSieciowy implements Runnable
             statusZwrotny(dlugosc);
             break;
         case WatekSieciowy.OBSLUGA_WIADOMOSCI:
-            // odebranieWiadomosci(kod);
+            odebranieWiadomosci(dlugosc);
             break;
         }
     }
@@ -250,14 +261,11 @@ public class WatekSieciowy implements Runnable
         this.listaKontaktow.ustawStanyKontaktow(mapa);
     }
 
-    private void odebranieWiadomosci(int dlugosc) throws IOException
+    private void odebranieWiadomosci(int dlugosc)
     {
         String tresc;
-        int idKontaktu;
-        char id[] = new char[2];
-        wejscie.read(id, 0, 2);
-        idKontaktu = Integer.valueOf(new String(id));
-        tresc = wejscie.readLine();
+        int idKontaktu = wczytajLiczbe2B();
+        tresc = wczytajTrescWiadomosci(dlugosc-3);
         utworzWiadomosc(tresc, idKontaktu);
 
     }
@@ -266,33 +274,44 @@ public class WatekSieciowy implements Runnable
     {
         Wiadomosc wiadomosc = new Wiadomosc();
         wiadomosc.ustawTresc(tresc);
-
-        if (nadawcy.get(idKontaktu) != null)
-        {
-            wiadomosc.setNadawca(new Kontakt(nadawcy.get(idKontaktu),
-                    idKontaktu));
-        }
-        else
-        {
-            String nick = this.listaKontaktow.zwrocNick(idKontaktu);
-            wiadomosc.setNadawca(new Kontakt(nadawcy.get(idKontaktu),
-                    idKontaktu));
-        }
+        wiadomosc.setNadawca(new Kontakt("",idKontaktu));
         wiadomosc.setData(tresc);
         odebraneWiadomosci.add(wiadomosc);
     }
 
+    private void przypiszNazwyNadawcowDoWiadomosci()
+    {
+        for(Wiadomosc wiadomosc : odebraneWiadomosci)
+        {
+            int id = wiadomosc.getNadawca().getId();
+            String nick = this.listaKontaktow.zwrocNick(id);
+            wiadomosc.getNadawca().setNazwa(nick);
+        }
+    }
+
     private void przekazWiadomosci()
     {
-        Collections.sort(odebraneWiadomosci);
-        this.oknoRozmowy.odbierzWiadomosci(odebraneWiadomosci);
+        if(flagaObieraniaRozmow)
+        {
+            Collections.sort(odebraneWiadomosci);
+            przypiszNazwyNadawcowDoWiadomosci();
+            oknoRozmowy.odbierzWiadomosci(odebraneWiadomosci);
+        }
+        else if(flagaOdpytywaniaKontaktow)
+        {
+            return;
+        }
     }
 
     private void wyczyscWiadomosci()
     {
-        odebraneWiadomosci.clear();
-        nadawcy.clear();
+        if(flagaObieraniaRozmow || flagaOdpytywaniaKontaktow)
+        {
+            odebraneWiadomosci.clear();
+            nadawcy.clear();
+        }
     }
+
 
     private void wyslijDane()
     {
@@ -304,11 +323,11 @@ public class WatekSieciowy implements Runnable
             }
             listaWiadomosci.clear();
         }
-        if(flagaOdpytywaniaKontaktow && licznikOD>100)
+        /*if(flagaOdpytywaniaKontaktow && licznikOD>100)
         {
             wyslijZapytanieOStanKontaktow();
             licznikOD =0;
-        }
+        }*/
         zakonczWpisywanie();
     }
 
@@ -335,6 +354,31 @@ public class WatekSieciowy implements Runnable
         wpiszLiczbe2B(id);
         // wpiszString(wiadomosc.zwrocCzas());
         wpiszString(wiadomosc.zwrocTresc());
+    }
+
+    private String wczytajTrescWiadomosci(int dlugosc)
+    {
+        char tablica[] = new char[dlugosc];
+        try
+        {
+            int licznik = 0;
+            while(licznik<dlugosc)
+            {
+                tablica[licznik] = (char)wejscie.read();
+                //System.out.println(tablica[licznik] + " " + (int)tablica[licznik]);
+                if ((int)tablica[licznik] > 255) dlugosc--;
+                licznik++;
+            }
+            String tresc = new String(tablica);
+            System.out.println(tresc.codePointAt(tresc.length()-1));
+            if(!tresc.endsWith("\n")) tresc.concat("\n");
+            return tresc;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private int wczytajLiczbe2B()
@@ -432,5 +476,10 @@ public class WatekSieciowy implements Runnable
     {
         WatekSieciowy.listaKontaktow = lista;
         flagaOdpytywaniaKontaktow = true;
+    }
+    public static void zgloszenieDoOdbieraniaWiadomosci(OknoRozmowy okno)
+    {
+        WatekSieciowy.oknoRozmowy = okno;
+        flagaObieraniaRozmow  = true;
     }
 }
