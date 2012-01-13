@@ -177,7 +177,14 @@ public class WatekSieciowy implements Runnable
 
     public static int wynikLogowania()
     {
-        if (!gniazdo.isConnected()) return 0;
+        System.out.println("p");
+        System.out.println(gniazdo.isBound());
+        System.out.println(gniazdo.isClosed());
+        System.out.println(gniazdo.isConnected());
+        System.out.println(gniazdo.isInputShutdown());
+        System.out.println(gniazdo.isOutputShutdown());
+        System.out.println("k");
+        if ((!gniazdo.isConnected() || gniazdo.isClosed()) && wynikLogowania < 0) return 0;
         else return wynikLogowania;
     }
 

@@ -316,6 +316,7 @@ public class GlowneOkno
     private int logowanie(final int daneUzytkownika, final String haslo)
     {
         int wynikLogowania = -1;
+        int licznikOdciecia = 0;
         try
         {
             WatekSieciowy.zalogujSie((short) daneUzytkownika, haslo);
@@ -323,7 +324,8 @@ public class GlowneOkno
             {
                 Thread.sleep(100);
                 wynikLogowania = WatekSieciowy.wynikLogowania();
-                if (wynikLogowania != -1) break;
+                //if(wynikLogowania == 0) licznikOdciecia++;
+                if (wynikLogowania > -1) break;
             }
         }
         catch (InterruptedException e)

@@ -25,6 +25,7 @@ public class ListaKontaktow extends JList implements MouseListener
     int licznikKonwersacji = 0;
     GlowneOkno parent;
     Kontakt kontaktJA;
+    private ZnajomiCellRenderer znajomiCellRenderer;
 
     public ListaKontaktow(GlowneOkno parent, Kontakt kontaktJA, DefaultListModel kontakty)
     {
@@ -46,7 +47,8 @@ public class ListaKontaktow extends JList implements MouseListener
     public ListaKontaktow(ListModel dataModel)
     {
         super(dataModel);
-        this.setCellRenderer(new ZnajomiCellRenderer());
+        znajomiCellRenderer = new ZnajomiCellRenderer();
+        this.setCellRenderer(znajomiCellRenderer);
     }
 
     public void ustawStanyKontaktow(Map<Integer, Integer> mapa)
@@ -59,6 +61,8 @@ public class ListaKontaktow extends JList implements MouseListener
             System.out.println(id + " " + mapa.get(id));
             ustawStan(id, mapa.get(id));
         }
+        this.validate();
+        this.repaint();
     }
 
     private void ustawStan(int id, Integer status)
