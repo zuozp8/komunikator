@@ -1,34 +1,31 @@
-import java.awt.Color;
-import java.awt.EventQueue;
-
-import javax.swing.DefaultListModel;
-import javax.swing.JFrame;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.UIManager;
 import java.awt.BorderLayout;
-import javax.swing.JList;
-import javax.swing.ListSelectionModel;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.ActionListener;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+
+import javax.swing.DefaultListModel;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 
 public class GlowneOkno
 {
@@ -41,6 +38,9 @@ public class GlowneOkno
     private OknoOpcji oknoOpcji;
     private int wynikLogowania;
     private Thread watekWS;
+    private boolean polaczenie = false;
+    private String adres;
+    private int port;
 
     /**
      * Launch the application.
@@ -77,10 +77,10 @@ public class GlowneOkno
         initialize();
 
         utworzOknoOpcji();
-        this.oknoOpcji.setVisible(false);
+        otworzOknoOpcji();
+        pobierzDanePolaczenia();
         utworzWatekSieciowy();
         polaczZKontem();
-
         inicjalizujListeKontaktow();
         inicjalizujOknoRozmowy();
         kontaktJA.czyKonwersacja();
@@ -107,7 +107,8 @@ public class GlowneOkno
 
             public void actionPerformed(ActionEvent e)
             {
-                polaczZKontem();
+
+                // polaczZKontem();
             }
         });
         mnRotlfmao.add(mntmZalogujSie);
@@ -181,6 +182,25 @@ public class GlowneOkno
         mnKontakty.add(mntmArchiwum);
     }
 
+    private void pobierzDanePolaczenia()
+    {
+        try
+        {
+            FileInputStream fstream = new FileInputStream("polaczenie.txt");
+            DataInputStream in = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            adres = br.readLine();
+            port = Integer.valueOf(br.readLine());
+            in.close();
+        }
+        catch (Exception e)
+        {
+            System.err.println("Error: " + e.getMessage());
+            adres = "127.0.0.1";
+            port = 4790;
+        }
+    }
+
     private DefaultListModel wczytajDane()
     {
         try
@@ -252,8 +272,8 @@ public class GlowneOkno
 
     private void utworzWatekSieciowy()
     {
-        int port = pobierzPort();
-        String adres = pobierzAdres();
+        /*port = pobierzPort();
+        adres = pobierzAdres();*/
         wSiec = new WatekSieciowy(adres, port);
         watekWS = new Thread(wSiec);
         watekWS.start();
@@ -337,7 +357,7 @@ public class GlowneOkno
         {
             e.printStackTrace();
         }
-        if(id> 0) poprawnaRejestracja(id);
+        if (id > 0) poprawnaRejestracja(id);
         else bladRejestracji();
         // }
         // });
@@ -346,12 +366,14 @@ public class GlowneOkno
 
     private void poprawnaRejestracja(int id)
     {
-        JOptionPane.showMessageDialog(frame, "Zarejestrowałęś się poprawnie. Twoje id: " + id);
+        JOptionPane.showMessageDialog(frame,
+                "Zarejestrowałęś się poprawnie. Twoje id: " + id);
     }
 
     private void bladRejestracji()
     {
-        JOptionPane.showMessageDialog(frame, "Błędna rejestracja. Spróbuj jeszcze raz");
+        JOptionPane.showMessageDialog(frame,
+                "Błędna rejestracja. Spróbuj jeszcze raz");
     }
 
     protected void utworzOknoOpcji()
