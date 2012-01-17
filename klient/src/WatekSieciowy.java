@@ -1,6 +1,7 @@
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -23,6 +24,7 @@ class WatekSieciowy implements Runnable
     static int port;
     static SocketChannel gniazdo;
     static String adres;
+    static GlowneOkno glowneOkno;
     static ListaKontaktow listaKontaktow;
     static OknoRozmowy oknoRozmowy;
     static int wynikLogowania = -1;
@@ -42,9 +44,10 @@ class WatekSieciowy implements Runnable
     ArrayList<Wiadomosc> odebraneWiadomosci = new ArrayList<Wiadomosc>();
     Map<Integer, String> nadawcy = new HashMap<Integer, String>();
 
-    public WatekSieciowy(String adres, int port)
+    public WatekSieciowy(String adres, int port, GlowneOkno glowneOkno)
     {
         super();
+        WatekSieciowy.glowneOkno = glowneOkno;
         WatekSieciowy.adres = adres;
         WatekSieciowy.port = port;
         polaczony = false;
@@ -60,7 +63,7 @@ class WatekSieciowy implements Runnable
             try
             {
                 Thread.sleep(50);
-                if (!gniazdo.isConnected())
+                if (!gniazdo.isConnected() || !gniazdo.isOpen())
                 {
                     polacz();
                 }
@@ -103,10 +106,18 @@ class WatekSieciowy implements Runnable
         try
         {
             gniazdo = SocketChannel.open();
+            gniazdo.configureBlocking(false);
             InetSocketAddress inAddress = new InetSocketAddress(adres, port);
             gniazdo.connect(inAddress);
+            while(!gniazdo.finishConnect()); 
             wyjscie = new ByteArrayOutputStream();
             wejscie = ByteBuffer.allocate(2000);
+        }
+        catch (ConnectException e)
+        {
+            glowneOkno.brakPolaczenia();
+            uspij();
+            e.printStackTrace();
         }
         catch (UnknownHostException e)
         {
@@ -116,6 +127,19 @@ class WatekSieciowy implements Runnable
         catch (IOException e)
         {
             System.out.println("Blad odczytu");
+            e.printStackTrace();
+        }
+    }
+
+    private static void uspij()
+    {
+        try
+        {
+            Thread.sleep(10000);
+        }
+        catch (InterruptedException e)
+        {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -355,14 +379,20 @@ class WatekSieciowy implements Runnable
     private String wczytajTrescWiadomosci(int dlugosc)
     {
         char tablica[] = new char[dlugosc];
+        byte tabliczka [] = new byte[dlugosc];
         int licznik = 0;
         while (licznik < dlugosc)
         {
-            tablica[licznik] = wejscie.getChar();
+            /*tablica[licznik] = wejscie.getChar();
+            System.out.println(Integer.toHexString(tablica[licznik]));
             if ((int) tablica[licznik] > 255) dlugosc--;
+            */
+            tabliczka[licznik] = wejscie.get();
+            System.out.println(Integer.toHexString(tablica[licznik]));
             licznik++;
         }
-        String tresc = new String(tablica);
+        //String tresc = new String(tablica);
+        String tresc = new String(tabliczka);
         System.out.println(tresc.codePointAt(tresc.length() - 1));
         if (!tresc.endsWith("\n")) tresc.concat("\n");
         return tresc;

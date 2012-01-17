@@ -275,7 +275,7 @@ public class GlowneOkno
         /*
          * port = pobierzPort(); adres = pobierzAdres();
          */
-        wSiec = new WatekSieciowy(adres, port);
+        wSiec = new WatekSieciowy(adres, port, this);
         watekWS = new Thread(wSiec);
         watekWS.start();
     }
@@ -317,7 +317,6 @@ public class GlowneOkno
     private int logowanie(final int daneUzytkownika, final String haslo)
     {
         int wynikLogowania = -1;
-        int licznikOdciecia = 0;
         try
         {
             WatekSieciowy.zalogujSie((short) daneUzytkownika, haslo);
@@ -325,7 +324,6 @@ public class GlowneOkno
             {
                 Thread.sleep(100);
                 wynikLogowania = WatekSieciowy.wynikLogowania();
-                // if(wynikLogowania == 0) licznikOdciecia++;
                 if (wynikLogowania > -1) break;
             }
         }
@@ -441,6 +439,12 @@ public class GlowneOkno
         frame.setVisible(false);
         frame.dispose();
         System.exit(0);
+    }
+
+    public void brakPolaczenia()
+    {
+        JOptionPane.showMessageDialog(frame,
+                "Nie można połączyć się z serwerem!!!.\nPróba zostanie ponowiona za 10 sekund.");
     }
 
 }
