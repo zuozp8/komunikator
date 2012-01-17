@@ -82,7 +82,7 @@ class WatekSieciowy implements Runnable
 
     public static void wylacz()
     {
-        flaga = false;
+        //flaga = false;
         try
         {
             gniazdo.close();
@@ -425,10 +425,7 @@ class WatekSieciowy implements Runnable
         }
         catch (IOException e)
         {
-            System.out.println(wyjscie.toByteArray());
             wylacz();
-            polacz();
-            zakonczWpisywanie();
         }
         finally
         {
