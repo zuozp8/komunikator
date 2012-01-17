@@ -77,7 +77,7 @@ public class GlowneOkno
         initialize();
 
         utworzOknoOpcji();
-        otworzOknoOpcji();
+        // otworzOknoOpcji();
         pobierzDanePolaczenia();
         utworzWatekSieciowy();
         polaczZKontem();
@@ -272,8 +272,9 @@ public class GlowneOkno
 
     private void utworzWatekSieciowy()
     {
-        /*port = pobierzPort();
-        adres = pobierzAdres();*/
+        /*
+         * port = pobierzPort(); adres = pobierzAdres();
+         */
         wSiec = new WatekSieciowy(adres, port);
         watekWS = new Thread(wSiec);
         watekWS.start();
@@ -324,7 +325,7 @@ public class GlowneOkno
             {
                 Thread.sleep(100);
                 wynikLogowania = WatekSieciowy.wynikLogowania();
-                //if(wynikLogowania == 0) licznikOdciecia++;
+                // if(wynikLogowania == 0) licznikOdciecia++;
                 if (wynikLogowania > -1) break;
             }
         }
@@ -338,11 +339,6 @@ public class GlowneOkno
 
     private void rejestracja(final String haslo)
     {
-        /*
-         * EventQueue.invokeLater(new Runnable() {
-         * 
-         * public void run() {
-         */
         int id = 0;
         WatekSieciowy.zarejestrujSie(haslo);
         try
@@ -361,8 +357,6 @@ public class GlowneOkno
         }
         if (id > 0) poprawnaRejestracja(id);
         else bladRejestracji();
-        // }
-        // });
         return;
     }
 
