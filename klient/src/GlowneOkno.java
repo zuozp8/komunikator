@@ -434,7 +434,8 @@ public class GlowneOkno
 
     protected void zakoncz()
     {
-        this.wSiec.wylacz();
+        WatekSieciowy.wylacz();
+        WatekSieciowy.zakonczWatek();
         this.oknoRozmowy.dispose();
         this.zapiszDane();
         frame.setVisible(false);

@@ -92,6 +92,11 @@ class WatekSieciowy implements Runnable
             e.printStackTrace();
         }
     }
+    
+    public static void zakonczWatek()
+    {
+        flaga = false;
+    }
 
     public static void polacz()
     {
@@ -151,6 +156,7 @@ class WatekSieciowy implements Runnable
                 przekazWiadomosci();
                 wyczyscWiadomosci();
             }
+            wejscie.clear();
         }
         catch (IOException e)
         {
@@ -420,12 +426,13 @@ class WatekSieciowy implements Runnable
     {
         try
         {
-            System.out.println(wyjscie.toByteArray());
             gniazdo.write(ByteBuffer.wrap(wyjscie.toByteArray()));
         }
         catch (IOException e)
         {
             wylacz();
+            polacz();
+            e.printStackTrace();
         }
         finally
         {
