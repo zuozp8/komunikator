@@ -137,6 +137,9 @@ void login(int fd, string data) {
 	case 2: { //login
 		cerr<<progname<<":\t login \n";
 		if(data.length() < 3) {
+			cerr<<progname<<":\t\t too many users \n";
+			close(fd);
+			readBuffor[fd].clear();
 		}
 		uint16_t id = unsigned(data[0])+unsigned(data[1])*256;
 		if (pass.size()>id && string(data,2)==pass.at(id)) {
