@@ -2,16 +2,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.concurrent.Semaphore;
 
 class WatekSieciowy implements Runnable
 {
@@ -31,28 +32,56 @@ class WatekSieciowy implements Runnable
     static int wynikRejestracji = -1;
     static int licznikOD = 0;
     static boolean flaga;
+    static int flagaCzynnosci = 0;
 
     static OutputStream outputStream;
     static ByteBuffer wejscie;
     static ByteArrayOutputStream wyjscie;
     static ArrayList<Wiadomosc> listaWiadomosci = new ArrayList<Wiadomosc>();
     static boolean flagaOdpytywaniaKontaktow = false;
-    static boolean flagaObieraniaRozmow = false;
+    static boolean flagaOdbieraniaRozmow = false;
 
     boolean polaczony;
     Kontakt daneDoLogowania;
-    ArrayList<Wiadomosc> odebraneWiadomosci = new ArrayList<Wiadomosc>();
-    Map<Integer, String> nadawcy = new HashMap<Integer, String>();
+    static ArrayList<Wiadomosc> odebraneWiadomosci = new ArrayList<Wiadomosc>();
+    private Thread watekWyjsciaThread;
+    static Selector selector = null, selectorW = null;
+    static Semaphore sem = null;
 
+    class WatekWyjscia implements Runnable {
+
+        @Override
+        public void run()
+        {
+            while(true) {
+                try
+                {
+                    Thread.sleep(100);
+
+                    WatekSieciowy.sem.acquire();
+                    WatekSieciowy.wyslijDane();
+                    WatekSieciowy.sem.release();
+                }
+                catch (InterruptedException e)
+                {}
+            }
+        }
+        
+    }
+    
     public WatekSieciowy(String adres, int port, GlowneOkno glowneOkno)
     {
         super();
+        sem = new Semaphore(1);
         WatekSieciowy.glowneOkno = glowneOkno;
         WatekSieciowy.adres = adres;
         WatekSieciowy.port = port;
         polaczony = false;
         flaga = true;
         polacz();
+        WatekWyjscia watekWyj = new WatekWyjscia();
+        watekWyjsciaThread = new Thread(watekWyj);
+        watekWyjsciaThread.start();
     }
 
     @Override
@@ -60,32 +89,26 @@ class WatekSieciowy implements Runnable
     {
         while (flaga)
         {
+            if (!gniazdo.isOpen()) {
+                polacz();
+            }
             try
             {
-                Thread.sleep(50);
-                if (!gniazdo.isConnected() || !gniazdo.isOpen())
-                {
-                    polacz();
-                }
-                else
-                {
-                    licznikOD++;
-                    odczytajDane();
-                    wyslijDane();
-                }
+                selector.select();
+                System.out.println(selector.selectedKeys().size());
             }
-            catch (InterruptedException e)
+            catch (IOException e)
             {
                 e.printStackTrace();
+                //System.exit(1);
             }
-
+            odczytajDane();
         }
-
+        
     }
 
     public static void wylacz()
     {
-        //flaga = false;
         try
         {
             gniazdo.close();
@@ -105,6 +128,10 @@ class WatekSieciowy implements Runnable
     {
         try
         {
+            WatekSieciowy.sem.acquire();
+            selector = Selector.open();
+            selectorW = Selector.open();
+            
             gniazdo = SocketChannel.open();
             gniazdo.configureBlocking(false);
             InetSocketAddress inAddress = new InetSocketAddress(adres, port);
@@ -112,10 +139,13 @@ class WatekSieciowy implements Runnable
             while(!gniazdo.finishConnect()); 
             wyjscie = new ByteArrayOutputStream();
             wejscie = ByteBuffer.allocate(2000);
+            gniazdo.register(selector,SelectionKey.OP_READ);
+            gniazdo.register(selectorW,SelectionKey.OP_WRITE);
+            WatekSieciowy.sem.release();
         }
         catch (ConnectException e)
         {
-            glowneOkno.brakPolaczenia();
+            bladWatku();
             uspij();
             e.printStackTrace();
         }
@@ -129,6 +159,28 @@ class WatekSieciowy implements Runnable
             System.out.println("Blad odczytu");
             e.printStackTrace();
         }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+            //System.exit(8);
+        }
+    }
+
+    private static void bladWatku()
+    {
+        switch(WatekSieciowy.flagaCzynnosci)
+        {
+        case WatekSieciowy.LOGOWANIE:
+            wynikLogowania = 0;
+            //glowneOkno.bladLogowania();
+            break;
+        case WatekSieciowy.REJESTRACJA:
+            wynikRejestracji = 0;
+            //glowneOkno.bladRejestracji();
+            break;
+        case 0:
+            glowneOkno.brakPolaczenia();
+            break;
+        }
     }
 
     private static void uspij()
@@ -139,11 +191,10 @@ class WatekSieciowy implements Runnable
         }
         catch (InterruptedException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
-
+/*
     private static InetAddress zwrocInetAddress(String adres)
     {
         try
@@ -164,12 +215,17 @@ class WatekSieciowy implements Runnable
         }
         return null;
     }
-
+*/
     private void odczytajDane()
     {
         try
         {
-            gniazdo.read(wejscie);
+            int readedBytes = gniazdo.read(wejscie);
+            if (readedBytes <= 0) {
+                gniazdo.close();
+                bladWatku();
+                throw new IOException("Broken connection");
+            }
             wejscie.flip();
             while (wejscie.hasRemaining())
             {
@@ -185,6 +241,14 @@ class WatekSieciowy implements Runnable
         catch (IOException e)
         {
             e.printStackTrace();
+            try
+            {
+                gniazdo.close();
+            }
+            catch (IOException e1)
+            {
+                e1.printStackTrace();
+            }
         }
     }
 
@@ -197,6 +261,7 @@ class WatekSieciowy implements Runnable
         wpiszLiczbe2B(daneUzytkownika);
         wpiszString(haslo);
         zakonczWpisywanie();
+        flagaCzynnosci = WatekSieciowy.LOGOWANIE;
         return 0;
     }
 
@@ -213,6 +278,7 @@ class WatekSieciowy implements Runnable
         wpiszLiczbe2B((short) dlugosc);
         wpiszLiczbe1B(WatekSieciowy.REJESTRACJA);
         wpiszString(haslo);
+        flagaCzynnosci = WatekSieciowy.REJESTRACJA;
         zakonczWpisywanie();
     }
 
@@ -250,6 +316,7 @@ class WatekSieciowy implements Runnable
     private void rejestracjaZwrotne()
     {
         wynikRejestracji = wczytajLiczbe2B();
+        flagaCzynnosci = 0;
         try
         {
             gniazdo.close();
@@ -262,6 +329,7 @@ class WatekSieciowy implements Runnable
     private void logowanieZwrotne()
     {
         wynikLogowania = wczytajLiczbe1B();
+        flagaCzynnosci = 0;
     }
 
     private void statusZwrotny(int dlugosc)
@@ -303,7 +371,7 @@ class WatekSieciowy implements Runnable
         odebraneWiadomosci.add(wiadomosc);
     }
 
-    private void przypiszNazwyNadawcowDoWiadomosci()
+    private static void przypiszNazwyNadawcowDoWiadomosci()
     {
         for (Wiadomosc wiadomosc : odebraneWiadomosci)
         {
@@ -313,9 +381,9 @@ class WatekSieciowy implements Runnable
         }
     }
 
-    private void przekazWiadomosci()
+    private static void przekazWiadomosci()
     {
-        if (flagaObieraniaRozmow)
+        if (flagaOdbieraniaRozmow)
         {
             Collections.sort(odebraneWiadomosci);
             przypiszNazwyNadawcowDoWiadomosci();
@@ -327,16 +395,15 @@ class WatekSieciowy implements Runnable
         }
     }
 
-    private void wyczyscWiadomosci()
+    private static void wyczyscWiadomosci()
     {
-        if (flagaObieraniaRozmow || flagaOdpytywaniaKontaktow)
+        if (flagaOdbieraniaRozmow || flagaOdpytywaniaKontaktow)
         {
             odebraneWiadomosci.clear();
-            nadawcy.clear();
         }
     }
 
-    private void wyslijDane()
+    private static void wyslijDane()
     {
         if (listaWiadomosci.size() > 0)
         {
@@ -365,7 +432,7 @@ class WatekSieciowy implements Runnable
         }
     }
 
-    private void wpiszWiadomoscNaWyjscie(Wiadomosc wiadomosc)
+    private static void wpiszWiadomoscNaWyjscie(Wiadomosc wiadomosc)
     {
         byte tresc[] = wiadomosc.zwrocTresc().getBytes();
         short id = (short) wiadomosc.getOdbiorca().getId();
@@ -456,17 +523,20 @@ class WatekSieciowy implements Runnable
     {
         try
         {
-            gniazdo.write(ByteBuffer.wrap(wyjscie.toByteArray()));
+            ByteBuffer wyjBufor = ByteBuffer.wrap(wyjscie.toByteArray());
+            wyjscie.reset();
+            while(true) {
+                selectorW.select();
+                int writtenBytes = gniazdo.write(wyjBufor);
+                if (writtenBytes==0) {
+                    //Skonczylismy pisać lub połączenie się zerwało
+                    break;//TODO:
+                }
+            }
         }
         catch (IOException e)
         {
-            wylacz();
-            polacz();
             e.printStackTrace();
-        }
-        finally
-        {
-            wyjscie.reset();
         }
     }
 
@@ -487,6 +557,11 @@ class WatekSieciowy implements Runnable
     public static void zgloszenieDoOdbieraniaWiadomosci(OknoRozmowy okno)
     {
         WatekSieciowy.oknoRozmowy = okno;
-        flagaObieraniaRozmow = true;
+        flagaOdbieraniaRozmow = true;
+        if (odebraneWiadomosci.size() > 0)
+        {
+            przekazWiadomosci();
+            wyczyscWiadomosci();
+        }
     }
 }

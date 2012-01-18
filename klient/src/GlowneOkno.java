@@ -77,13 +77,11 @@ public class GlowneOkno
         initialize();
 
         utworzOknoOpcji();
-        // otworzOknoOpcji();
         pobierzDanePolaczenia();
         utworzWatekSieciowy();
         polaczZKontem();
         inicjalizujListeKontaktow();
         inicjalizujOknoRozmowy();
-        kontaktJA.czyKonwersacja();
     }
 
     /**
@@ -101,7 +99,7 @@ public class GlowneOkno
         JMenu mnRotlfmao = new JMenu("ROTLFMAO");
         menuBar.add(mnRotlfmao);
 
-        JMenuItem mntmZalogujSie = new JMenuItem("Zaloguj sie");
+        /*JMenuItem mntmZalogujSie = new JMenuItem("Zaloguj sie");
         mntmZalogujSie.addActionListener(new ActionListener()
         {
 
@@ -111,10 +109,10 @@ public class GlowneOkno
                 // polaczZKontem();
             }
         });
-        mnRotlfmao.add(mntmZalogujSie);
+        mnRotlfmao.add(mntmZalogujSie);*/
 
-        JMenuItem mntmZmienProfil = new JMenuItem("Zmien profil");
-        mnRotlfmao.add(mntmZmienProfil);
+        /*JMenuItem mntmZmienProfil = new JMenuItem("Zmien profil");
+        mnRotlfmao.add(mntmZmienProfil);*/
 
         JMenuItem mntmOpcje = new JMenuItem("Opcje");
         mntmOpcje.addActionListener(new ActionListener()
@@ -175,11 +173,11 @@ public class GlowneOkno
         });
         mnKontakty.add(mntmUsuZnajomego);
 
-        JMenuItem mntmRozpocznijRozmow = new JMenuItem("Rozpocznij rozmowę");
+        /*JMenuItem mntmRozpocznijRozmow = new JMenuItem("Rozpocznij rozmowę");
         mnKontakty.add(mntmRozpocznijRozmow);
 
         JMenuItem mntmArchiwum = new JMenuItem("Archiwum");
-        mnKontakty.add(mntmArchiwum);
+        mnKontakty.add(mntmArchiwum);*/
     }
 
     private void pobierzDanePolaczenia()
@@ -267,19 +265,15 @@ public class GlowneOkno
     private void inicjalizujOknoRozmowy()
     {
         oknoRozmowy = new OknoRozmowy(kontaktJA);
-        oknoRozmowy.setVisible(false);
     }
 
     private void utworzWatekSieciowy()
     {
-        /*
-         * port = pobierzPort(); adres = pobierzAdres();
-         */
         wSiec = new WatekSieciowy(adres, port, this);
         watekWS = new Thread(wSiec);
         watekWS.start();
     }
-
+/*
     private String pobierzAdres()
     {
         return oknoOpcji.zwrocAdresIP();
@@ -289,7 +283,7 @@ public class GlowneOkno
     {
         return oknoOpcji.zwrocNumerPortu();
     }
-
+*/
     private void polaczZKontem()
     {
         int wynik = 0;
@@ -331,6 +325,7 @@ public class GlowneOkno
         {
             e.printStackTrace();
         }
+        if(wynikLogowania == 0) bladLogowania();
         System.out.println(wynikLogowania);
         return wynikLogowania;
     }
@@ -361,13 +356,25 @@ public class GlowneOkno
     private void poprawnaRejestracja(int id)
     {
         JOptionPane.showMessageDialog(frame,
-                "Zarejestrowałęś się poprawnie. Twoje id: " + id);
+                "Zarejestrowałeś się poprawnie. Twoje id: " + id);
     }
 
-    private void bladRejestracji()
+    public void bladRejestracji()
     {
         JOptionPane.showMessageDialog(frame,
                 "Błędna rejestracja. Spróbuj jeszcze raz");
+    }
+
+    public void brakPolaczenia()
+    {
+        JOptionPane.showMessageDialog(frame,
+                "Nie można połączyć się z serwerem!!!.\nPróba zostanie ponowiona za 10 sekund.");
+    }
+
+    public void bladLogowania()
+    {
+        JOptionPane.showMessageDialog(frame,
+        "Błędne logowanie.");
     }
 
     protected void utworzOknoOpcji()
@@ -439,12 +446,6 @@ public class GlowneOkno
         frame.setVisible(false);
         frame.dispose();
         System.exit(0);
-    }
-
-    public void brakPolaczenia()
-    {
-        JOptionPane.showMessageDialog(frame,
-                "Nie można połączyć się z serwerem!!!.\nPróba zostanie ponowiona za 10 sekund.");
     }
 
 }

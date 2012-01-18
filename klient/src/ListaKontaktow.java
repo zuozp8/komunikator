@@ -33,15 +33,10 @@ public class ListaKontaktow extends JList implements MouseListener
         this.kontakty = kontakty;
         this.parent = parent;
         this.kontaktJA = kontaktJA;
-        this.setVisibleRowCount(4);
+        this.setVisibleRowCount(10);
         this.setCellRenderer(new ZnajomiCellRenderer());
         addMouseListener(this);
         zgloszenieDoOdpytywania();
-    }
-
-    private void zgloszenieDoOdpytywania()
-    {
-        WatekSieciowy.zgloszenieDoOdpytywania(this);
     }
 
     public ListaKontaktow(ListModel dataModel)
@@ -49,6 +44,11 @@ public class ListaKontaktow extends JList implements MouseListener
         super(dataModel);
         znajomiCellRenderer = new ZnajomiCellRenderer();
         this.setCellRenderer(znajomiCellRenderer);
+    }
+
+    private void zgloszenieDoOdpytywania()
+    {
+        WatekSieciowy.zgloszenieDoOdpytywania(this);
     }
 
     public void ustawStanyKontaktow(Map<Integer, Integer> mapa)

@@ -43,6 +43,7 @@ public class OknoRozmowy extends JFrame
 		this.kontaktJA = kontaktJA;
 		add(zbiorZakladek);
 		this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		setVisible(false);
 		zgloszenieDoOdczytywaniaWiadomosci();
 	}
 
@@ -115,8 +116,7 @@ public class OknoRozmowy extends JFrame
     {
         int polozenie;
         PanelRozmowy panelRozmowy;
-        Wiadomosc wiadomosc,wiadomoscDruga;
-        ArrayList<Wiadomosc> wiadomosciTenSamNadawca = new ArrayList<Wiadomosc>();
+        Wiadomosc wiadomosc;
         this.setVisible(true);
         for(int i=0; i < odebraneWiadomosci.size() ; i++)
         {
@@ -125,7 +125,6 @@ public class OknoRozmowy extends JFrame
             polozenie = mapaPolozeniaRozmow.get(wiadomosc.getNadawca().getId());
             panelRozmowy = (PanelRozmowy) this.zbiorZakladek.getComponentAt(polozenie);
             panelRozmowy.odbierzWiadomosc(wiadomosc);
-            
         }
     }
 	
@@ -174,7 +173,6 @@ class NaglowekZakladki extends JPanel {
         this.okno = okno;
         setOpaque(false);
         
-        //make JLabel read titles from JTabbedPane
         JLabel label = new JLabel() {
             public String getText() {
                 int i = okno.zwrocNumerKomponentu(NaglowekZakladki.this);
@@ -186,12 +184,9 @@ class NaglowekZakladki extends JPanel {
         };
         
         add(label);
-        //add more space between the label and the button
         label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-        //tab button
         JButton button = new PrzyciskZakladki();
         add(button);
-        //add more space to the top of the component
         setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
     }
 
@@ -200,19 +195,13 @@ class NaglowekZakladki extends JPanel {
             int size = 17;
             setPreferredSize(new Dimension(size, size));
             setToolTipText("close this tab");
-            //Make the button looks the same for all Laf's
             setUI(new BasicButtonUI());
-            //Make it transparent
             setContentAreaFilled(false);
-            //No need to be focusable
             setFocusable(false);
             setBorder(BorderFactory.createEtchedBorder());
             setBorderPainted(false);
-            //Making nice rollover effect
-            //we use the same listener for all buttons
             addMouseListener(buttonMouseListener);
             setRolloverEnabled(true);
-            //Close the proper tab by clicking the button
             addActionListener(this);
         }
 
