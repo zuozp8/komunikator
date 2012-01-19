@@ -194,7 +194,7 @@ public class GlowneOkno
         catch (Exception e)
         {
             System.err.println("Error: " + e.getMessage());
-            adres = "127.0.0.1";
+            adres = "192.168.1.110";
             port = 4790;
         }
     }
@@ -356,25 +356,25 @@ public class GlowneOkno
     private void poprawnaRejestracja(int id)
     {
         JOptionPane.showMessageDialog(frame,
-                "ZarejestrowaÅ‚eÅ› siÄ™ poprawnie. Twoje id: " + id);
+                "Zarejestrowa³eœ siê poprawnie. Twoje id: " + id);
     }
 
     public void bladRejestracji()
     {
         JOptionPane.showMessageDialog(frame,
-                "BÅ‚Ä™dna rejestracja. SprÃ³buj jeszcze raz");
+                "B³êdna rejestracja. Spróbuj jeszcze raz");
     }
 
     public void brakPolaczenia()
     {
         JOptionPane.showMessageDialog(frame,
-                "Nie moÅ¼na poÅ‚Ä…czyÄ‡ siÄ™ z serwerem!!!.\nPrÃ³ba zostanie ponowiona za 10 sekund.");
+                "Brak po³¹czenia z serwerem. Nastêpuje zamkniêcie programu.");
     }
 
     public void bladLogowania()
     {
         JOptionPane.showMessageDialog(frame,
-        "BÅ‚Ä™dne logowanie.");
+        "B³êdne logowanie.");
     }
 
     protected void utworzOknoOpcji()
@@ -391,7 +391,7 @@ public class GlowneOkno
     protected void bladUsuniecia()
     {
         JOptionPane.showMessageDialog(frame,
-                "Najpierw zaznacz kontakt z listy!", "BÅ‚Ä…d",
+                "Najpierw zaznacz kontakt z listy!", "B³¹d",
                 JOptionPane.ERROR_MESSAGE);
     }
 
@@ -399,7 +399,7 @@ public class GlowneOkno
     {
         Object[] options = { "Tak", "Nie" };
         int n = JOptionPane.showOptionDialog(frame,
-                "Czy na pewno chcesz usunÄ…Ä‡ zaznaczony kontakt?",
+                "Czy na pewno chcesz usun¹c zaznaczony kontakt?",
                 "Czy aby na pewno?", JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
         if (n == 0) return true;
