@@ -397,14 +397,14 @@ class WatekSieciowy implements Runnable {
 		short l1, l2;
 		l1 = wejscie.get();
 		l2 = wejscie.get();
-		if (l1<0) l1+=128;
-        if (l2<0) l2+=128;
+		if (l1<0) l1+=256;
+        if (l2<0) l2+=256;
 		return l1 + l2 * 256;
 	}
 
 	private int wczytajLiczbe1B() {
 	    short l = wejscie.get();
-        if (l<0) l+=128;
+        if (l<0) l+=256;
 		return l;
 	}
 
