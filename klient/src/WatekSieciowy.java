@@ -122,7 +122,6 @@ class WatekSieciowy implements Runnable {
 			while (!gniazdo.finishConnect())
 				;
 			wyjscie = new ByteArrayOutputStream();
-			wejscie = ByteBuffer.allocate(2000);
 			gniazdo.register(selector, SelectionKey.OP_READ);
 			gniazdo.register(selectorW, SelectionKey.OP_WRITE);
 			WatekSieciowy.sem.release();
@@ -169,16 +168,41 @@ class WatekSieciowy implements Runnable {
 
 	private void odczytajDane() {
 		try {
+			wejscie = ByteBuffer.allocate(2);
 			int readedBytes = gniazdo.read(wejscie);
-			if (readedBytes <= 0) {
+			if (readedBytes < 1) {
 				gniazdo.close();
 				bladWatku();
 				throw new IOException("Broken connection");
+			} else if (readedBytes == 1) {
+				ByteBuffer wejscie2 = ByteBuffer.allocate(2);
+				wejscie2.put(wejscie.get());
+				wejscie = ByteBuffer.allocate(1);
+				readedBytes = gniazdo.read(wejscie);
+				if (readedBytes < 1) {
+					gniazdo.close();
+					bladWatku();
+					throw new IOException("Broken connection");
+				}
+				wejscie2.put(wejscie.get());
+				wejscie = wejscie2;
 			}
 			wejscie.flip();
-			while (wejscie.hasRemaining()) {
-				przetworzWiadomosc();
+			int length = wczytajLiczbe2B();
+			int remainingLength = length;
+			wejscie = ByteBuffer.allocate(remainingLength);
+			while (remainingLength>0) {
+				readedBytes = gniazdo.read(wejscie);
+				if (readedBytes < 1) {
+					gniazdo.close();
+					bladWatku();
+					throw new IOException("Broken connection");
+				}
+				remainingLength-=readedBytes;
 			}
+			wejscie.flip();
+			int kod = wczytajLiczbe1B();
+			przetworzTrescWiadomosci(kod, length);
 			if (odebraneWiadomosci.size() > 0) {
 				przekazWiadomosci();
 				wyczyscWiadomosci();
@@ -227,12 +251,6 @@ class WatekSieciowy implements Runnable {
 
 	public static int wynikRejestracji() {
 		return wynikRejestracji;
-	}
-
-	private void przetworzWiadomosc() {
-		int dlugosc = wczytajLiczbe2B();
-		int kod = wczytajLiczbe1B();
-		przetworzTrescWiadomosci(kod, dlugosc);
 	}
 
 	private void przetworzTrescWiadomosci(int kod, int dlugosc) {
