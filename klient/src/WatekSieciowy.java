@@ -129,15 +129,15 @@ class WatekSieciowy implements Runnable {
 		} catch (ConnectException e) {
 			bladWatku();
 			uspij();
-			//e.printStackTrace();
+			e.printStackTrace();
 		} catch (UnknownHostException e) {
 			System.out.println("Nieznany host");
-			//e.printStackTrace();
+			e.printStackTrace();
 		} catch (IOException e) {
 			System.out.println("Blad odczytu");
-			//e.printStackTrace();
+			e.printStackTrace();
 		} catch (InterruptedException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			System.exit(8);
 		}
 	}
@@ -331,7 +331,7 @@ class WatekSieciowy implements Runnable {
 			}
 			listaWiadomosci.clear();
 		}
-		if (flagaOdpytywaniaKontaktow && licznikOD > 70) {
+		if (flagaOdpytywaniaKontaktow && licznikOD > 200) {
 			wyslijZapytanieOStanKontaktow();
 			licznikOD = 0;
 		}
@@ -379,11 +379,15 @@ class WatekSieciowy implements Runnable {
 		short l1, l2;
 		l1 = wejscie.get();
 		l2 = wejscie.get();
+		if (l1<0) l1+=128;
+        if (l2<0) l2+=128;
 		return l1 + l2 * 256;
 	}
 
 	private int wczytajLiczbe1B() {
-		return wejscie.get();
+	    short l = wejscie.get();
+        if (l<0) l+=128;
+		return l;
 	}
 
 	private static void wpiszLiczbe2B(short dlugosc) {

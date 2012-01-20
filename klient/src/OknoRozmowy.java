@@ -55,6 +55,9 @@ public class OknoRozmowy extends JFrame
     public void dodajRozmowe(Kontakt osoba)
 	{
 		PanelRozmowy nowa = new PanelRozmowy(osoba, kontaktJA );
+		
+		if( ustawAktualnaRozmowa(osoba)) return;
+		
 		nowa.ustawId(osoba.getId());
 		zbiorZakladek.addTab(osoba.getNazwa(), nowa);
 		zbiorZakladek.setTabComponentAt(zbiorZakladek.getTabCount()-1, 
@@ -63,37 +66,53 @@ public class OknoRozmowy extends JFrame
 		setVisible(true);
 	}
 
-	public void ustawAktualnaRozmowa(Kontakt osoba)
+    public boolean ustawAktualnaRozmowa(Kontakt osoba)
 	{
 		int id = osoba.getId();
-		
+		int numerWUkrytychZakladkach = -1;
 		if ( !szukajWOtwartychRozmowach(id) )
 		{
-			szukajWUkrytychRozmowach(id);
+		    numerWUkrytychZakladkach = szukajWUkrytychRozmowach(id);
+			if (numerWUkrytychZakladkach > -1 )
+			{
+			    przywrocZakladke(numerWUkrytychZakladkach);
+	            setVisible(true);
+	            return true;
+			}
+            setVisible(true);
+			return false;
 		}
-		
-		setVisible(true);
+		else 
+		{
+	        setVisible(true);
+		    return true;
+		}
 	}
 
-	private void szukajWUkrytychRozmowach(int id)
+	private int szukajWUkrytychRozmowach(int id)
 	{
 		PanelRozmowy zakladka;
 		for (int i = 0; i < ukryteZakladki.getSize(); i++)
 		{
 			zakladka = (PanelRozmowy) ukryteZakladki.get(i);
-			System.out.println(zakladka.zwrocId() + " " + id);
+			//System.out.println(zakladka.zwrocId() + " " + id);
 			if (zakladka.zwrocId() == id)
 			{
-				zbiorZakladek.addTab(zakladka.getRozmowcaNazwa(), zakladka);
-				zbiorZakladek.setTabComponentAt(zbiorZakladek.getTabCount()-1, 
-											new NaglowekZakladki(this));
-				zbiorZakladek.setSelectedIndex(i);
-				ukryteZakladki.remove(i);
-				System.out.println(i);
-				return;
+				//System.out.println(i);
+				return i;
 			}
 		}
+		return -1;
 	}
+
+    private void przywrocZakladke(int i) {
+        PanelRozmowy zakladka = (PanelRozmowy) ukryteZakladki.get(i);
+        zbiorZakladek.addTab(zakladka.getRozmowcaNazwa(), zakladka);
+        zbiorZakladek.setTabComponentAt(zbiorZakladek.getTabCount()-1, 
+        							new NaglowekZakladki(this));
+        zbiorZakladek.setSelectedIndex(i);
+        ukryteZakladki.remove(i);
+    }
 
 	private boolean szukajWOtwartychRozmowach(int id)
 	{
@@ -101,11 +120,11 @@ public class OknoRozmowy extends JFrame
 		for (int i = 0; i < zbiorZakladek.getTabCount(); i++)
 		{
 			zakladka = (PanelRozmowy) zbiorZakladek.getComponentAt(i);
-			System.out.println(zakladka.zwrocId() + " " + id);
+			//System.out.println(zakladka.zwrocId() + " " + id);
 			if (zakladka.zwrocId() == id)
 			{
 				zbiorZakladek.setSelectedIndex(i);
-				System.out.println(i);
+				//System.out.println(i);
 				return true;
 			}
 		}
