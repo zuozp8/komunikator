@@ -53,7 +53,7 @@ class WatekSieciowy implements Runnable {
 		public void run() {
 			while (true) {
 				try {
-					Thread.sleep(100);
+					Thread.sleep(30);
 					licznikOD++;
 					WatekSieciowy.sem.acquire();
 					WatekSieciowy.wyslijDane();
@@ -192,6 +192,7 @@ class WatekSieciowy implements Runnable {
 			int remainingLength = length;
 			wejscie = ByteBuffer.allocate(remainingLength);
 			while (remainingLength>0) {
+				selector.select();
 				readedBytes = gniazdo.read(wejscie);
 				if (readedBytes < 1) {
 					gniazdo.close();
@@ -246,7 +247,7 @@ class WatekSieciowy implements Runnable {
 		wpiszLiczbe1B(WatekSieciowy.REJESTRACJA);
 		wpiszString(haslo);
 		flagaCzynnosci = WatekSieciowy.REJESTRACJA;
-		zakonczWpisywanie();
+		//zakonczWpisywanie();
 	}
 
 	public static int wynikRejestracji() {
@@ -349,7 +350,7 @@ class WatekSieciowy implements Runnable {
 			}
 			listaWiadomosci.clear();
 		}
-		if (flagaOdpytywaniaKontaktow && licznikOD > 200) {
+		if (flagaOdpytywaniaKontaktow && licznikOD > 1000) {
 			wyslijZapytanieOStanKontaktow();
 			licznikOD = 0;
 		}
@@ -444,7 +445,7 @@ class WatekSieciowy implements Runnable {
 			while (true) {
 				selectorW.select();
 				int writtenBytes = gniazdo.write(wyjBufor);
-				if (writtenBytes == 0) {
+				if (writtenBytes <= 0) {
 					// Skonczylismy pisać lub połączenie się zerwało
 					break;// TODO:
 				}
