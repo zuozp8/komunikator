@@ -141,7 +141,7 @@ void login(int fd, string data) {
 			close(fd);
 			readBuffor[fd].clear();
 		}
-		uint16_t id = unsigned(data[0])+unsigned(data[1])*256;
+		uint16_t id = uint8_t(data[0])+uint8_t(data[1])*256;
 		if (pass.size()>id && string(data,2)==pass.at(id)) {
 			writeBuffor[fd].push_back(char(2));//Size of message
 			writeBuffor[fd].push_back(char(0));
@@ -186,7 +186,7 @@ void talkWithClient(int id, string data) {
 			for (uint16_t i=0; i<data.length(); i+=2) {
 				response.push_back(data[i]);
 				response.push_back(data[i+1]);
-				int checkedId=unsigned(data[i+1])*256+unsigned(data[i]);
+				int checkedId=uint8_t(data[i+1])*256+uint8_t(data[i]);
 				char status = connections.count(checkedId);
 				response.push_back(status);
 			}
@@ -197,9 +197,9 @@ void talkWithClient(int id, string data) {
 			if (data.length()<2) {
 				throw "wrong data";
 			}
-			unsigned recieverId = unsigned(data[0])+unsigned(data[1])*256;
+			uint8_t recieverId = uint8_t(data[0])+uint8_t(data[1])*256;
 			data.erase(0,2);
-			cerr<<progname<<" to "<<recieverId;
+			cerr<<progname<<" to "<<uint16_t(recieverId)<<endl;
 			if (recieverId >= pass.size()) {
 				throw "wrong reciever";
 			}
@@ -215,7 +215,7 @@ void talkWithClient(int id, string data) {
 		default:
 			throw "wrong code";
 		}
-	} catch (char* error){
+	} catch (char const* error){
 		cerr<<progname<<":\t\t "<<error<<"\n";
 		close(fd);
 		readBuffor[fd].clear();
@@ -338,7 +338,7 @@ int main(int argc, char* argv[]) {
 			if (FD_ISSET(fd,&fsRmask)) {
 				char buf[1600];
 				int readedBytes = read(fd,buf, 1600);
-				if (readedBytes == 0) { //connection gets closed
+				if (readedBytes <= 0) { //connection gets closed
 					cerr<<progname<<": connection closed fd: "<<fd<<" id: "<<id<<endl;
 					readBuffor.erase(fd);
 					close(fd);
@@ -348,7 +348,7 @@ int main(int argc, char* argv[]) {
 				readBuffor[fd].append(buf,readedBytes);
 				if (readBuffor[fd].length()<2)
 					continue;
-				uint16_t messageLength = unsigned(readBuffor[fd][1])*256 + unsigned(readBuffor[fd][0]);
+				uint16_t messageLength = uint8_t(readBuffor[fd][1])*256 + uint8_t(readBuffor[fd][0]);
 				cerr<<progname<<": readed "<<readedBytes<<" from fd "<<fd<<"(id:"<<id<<")"
 					<<", "<<readBuffor[fd].length()<<" in buffor, "<<messageLength<<" message length\n";
 				if (readBuffor[fd].length() >= messageLength+2u) {
@@ -376,7 +376,7 @@ int main(int argc, char* argv[]) {
 			if (FD_ISSET(fd,&fsRmask)) {
 				char buf[1600];
 				int readedBytes = read(fd,buf, 1600);
-				if (readedBytes == 0) { //connection gets closed
+				if (readedBytes <= 0) { //connection gets closed
 					cerr<<progname<<": connection closed fd: "<<fd<<endl;
 					readBuffor.erase(fd);
 					close(fd);
@@ -386,7 +386,7 @@ int main(int argc, char* argv[]) {
 				readBuffor[fd].append(buf,readedBytes);
 				if (readBuffor[fd].length()<2)
 					continue;
-				uint16_t messageLength = unsigned(readBuffor[fd][1])*256 + unsigned(readBuffor[fd][0]);
+				uint16_t messageLength = uint8_t(readBuffor[fd][1])*256 + uint8_t(readBuffor[fd][0]);
 				cerr<<progname<<": readed "<<readedBytes<<" from fd "<<fd
 					<<", "<<readBuffor[fd].length()<<" in buffor, "<<messageLength<<" message length\n";
 				if (readBuffor[fd].length() >= messageLength+2u) {
