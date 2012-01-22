@@ -81,10 +81,11 @@
 	odbierzemy cały pakiet, kopiujemy go i usówamy z readBuffora. Podobnie, wysyłając dane do klienta, zapisujemy je do
 	\textit{writeBuffor}a i staramy się sukcesywnie przesyłać.
 	
-	\subsection{Klient dla Windows}Klienta stworzyliśmy w języku Java, gdyż byliśmy w stanie potem uruchamić go w środowisku
-	Linux oraz Windows. Do stworzenia GUI użyliśmy biblioteki SWING. Program składa się z dwóch głównych okienek: jednego 
+	\subsection{Klient dla systemu Windows}Klienta stworzyliśmy w języku Java, gdyż byliśmy w stanie potem uruchamić go także w środowisku
+	Linux. Do stworzenia GUI użyliśmy biblioteki SWING. Program składa się z dwóch głównych okienek: jednego 
 	zawierającego listę kontaktów i drugiego zawierającego rozmowy.
-	\paragraph{Implementacja} 
+	\paragraph{Implementacja}
+	\begin{quote}
 		\textit{GlowneOkno.java} Klasa rozpoczynająca program i zarządzająca jego głównymi elementami. \\
 		\textit{Kontakt.java} Klasa przechowująca informacje o Kontakcie tzn. jego nick, id, aktualną dostępność i czy 
 			toczy się z nim rozmowa.\\
@@ -97,15 +98,23 @@
 		\textit{WatekSieciowy.java} Zarządza połączeniem z serwerem, nadawaniem i odbieraniem wiadomości wszystkich typów.
 			Składa się z dwóch wątków. Jeden z nich wysyła dane, a drugi wczytuje dane.\\
 		\textit{Wiadomosc.java} Reprezentuje pojedyńczą wiadomość przesyłaną w rozmowach. \\
-		\textit{ZnajomiCellRenderer.java} Klasa pomocnica służąca do wyświetlania nicku oraz ikony dostępności w liście kontaków. \\
+		\textit{ZnajomiCellRenderer.java} Klasa pomocnica służąca do wyświetlania nicku oraz ikony dostępności w liście kontaków. 
+	\end{quote} 
 	\paragraph{Główne problemy} Największym problemem napotkanym w czasie implementacji było poprawne odczytywanie stanu połączenia
-	tzn. czy jeszcze jesteśmy połączeni czy już nas rozłączyło. Początkowo istniał tylko jeden wątek do komunikacji sieciowej, który
-	najpierw odbierał dane, a potem je wysyłał. Korzystaliśmy wtedy z klasy \textbf{Socket} z pakietu \textit{java.net.Socket},
-	niestety to rozwiązanie okazało się nie wystarczające. Nie mogliśmy poprawnie rozwiązać problemu błędnego logowania i 
-	rozłączenia serwera w czasie pracy klienta. \\ \\
-	Okazało się, że lepszym wyjściem było użycie klasy \textbf{SocketChannel} z pakietu \textit{java.nio.channels.SocketChannel}, 
-	ale w pełni satysfakcjonujące rozwiązanie otrzymaliśmy gdy wyodrębniliśmy wysyłanie komunikatów jako osobny wątek oraz 
-	zastosowaliśmy semafory. Dzięki usprawnieniom program działa nawet czy bardzo niewielkich ustawionych buforach.
+		tzn. czy jeszcze jesteśmy połączeni czy serwer się rozłączył. Początkowo istniał tylko jeden wątek do komunikacji sieciowej, który
+		najpierw odbierał dane, a potem je wysyłał. Korzystaliśmy wtedy z klasy \textbf{Socket} z pakietu \textit{java.net.Socket},
+		niestety to rozwiązanie okazało się nie wystarczające. Nie mogliśmy poprawnie rozwiązać problemu błędnego logowania
+		(zgodnie ze specyfikacją serwer rozłącza się gdy podamy złe hasło) i 
+		rozłączenia serwera w czasie pracy klienta. \\ \\
+		Okazało się, że lepszym wyjściem było użycie klasy \textbf{SocketChannel} z pakietu \textit{java.nio.channels.SocketChannel}
+		oraz klasy \textbf{Selector} z pakietu \textit{java.nio.channels.Selector}, 
+		ale w pełni satysfakcjonujące rozwiązanie otrzymaliśmy gdy wyodrębniliśmy wysyłanie komunikatów jako osobny wątek,
+		musieliśmy wtedy też zacząć używać semaforów, by uniknąć współbieżnej modyfikacji tych samych danych.\\
+		Dzięki usprawnieniom program działa nawet przy bardzo niewielkich buforach gniazd tcp.
+	\subsection{Klient dla systemu Android}
+		Klient dla systemu Android został nazwany \textbf{mojemojelol}.\\
+		Współdzieli z desktopowym klientem cześć kodu związaną z komunikacją sieciową.\\
+		GUI tworzyliśmy używając API systemu android, więc kod związany z graficznym interfejsem użytkownika musieliśmy  przepisać.
 	
 \section{Obsługa programu}
 	\subsection{Serwer}
