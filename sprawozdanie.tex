@@ -53,7 +53,8 @@
 		Serwer odpowiada \kod{3} wysyłając wielokrotność 3 bajtów: dla każdego ID o które wystosowano zapytanie
 		2 bajty zajmuje to ID, zaś w trzecim bajcie jest kod dostępności danego użytkownika.\\
 		Można sprawdzić dostępność samego siebie.\\
-		Można sprawdzić dostępność maksymalnie 1000 osób.
+		Można sprawdzić dostępność maksymalnie 1000 osób.\\		
+		Można sprawdzić dostępność osób które nie istnieją (podać ID, na które jeszcze nikt się nie zarejestrował).
 	\paragraph{Wysłanie wiadomości}\kod{5}\\
 		Klient wysyła 2 bajty - ID odbiorcy, a potem wysyłaną wiadomość\\
 		Serwer nie informauje nadawce o powodzeniu operacji wysłania.\\
@@ -62,12 +63,12 @@
 		i są mu przesyłane w momencie gdy się zaloguje.
 		
 \section{Realizacja}
-	\subsection{Serwer}Stworzyliśmy serwer używając poznanych na zajęciach socketów BSD używając języka C++.
-	By przechowywać dane o użytkownikach, używamy dynamicznych kontenerów z STL.
-	Kod serwera jest krótki, więc pozwoliliśmy sobie go zamknąć w pojedynczym pliku \textit{main.cpp}.
 	\begin{quote}
 		\textit{Code is the ultimate documentation.}
 	\end{quote}
+	\subsection{Serwer}Stworzyliśmy serwer używając poznanych na zajęciach socketów BSD używając języka C++.
+	By przechowywać dane o użytkownikach i połaczeniach używamy dynamicznych kontenerów z STL.
+	Kod serwera jest krótki, więc pozwoliliśmy sobie go zamknąć w pojedynczym pliku \textit{main.cpp}.
 	\paragraph{Wielowątkowość}Mieliśmy problem z wieloątkowością - gdybyśmy dla każdego połączenia tworzyli
 	nowy wątek, to z tegoż nowego wątku nie moglibyśmy bezpośrednio wysyłać wiadomości do użytkowników, którzy
 	się zalogowali po nas - nie mielibyśmy dostępu do gniazd dla nich stworzonych. Dlatego nie tworzyliśmy nowych
@@ -126,11 +127,11 @@
 		Klient uruchamiany jest na maszynie wirtualnej Java.
 		Intuicyjny graficzny interfejs użytkownika pozwala zarejestrować się, zalogować i korzystać z komunikatora.
 		Zaznaczenie opcji "Rejestracja" przy logowaniu sprawi, że nasze hasło zostanie użyte do stworzenia nowego konta.
-		Kliknięcie na kontakt otwiera okno z rozmowami, a jeśli jest już otwarte to dodaje nową zakładkę.
+		Kliknięcie na kontakt otwiera okno z rozmowami, a jeśli jest ono już otwarte to dodaje nową zakładkę.
 		Zakładki można zamykać krzyżekiem umieszczonym na niej. Nie usuwa to rozmowy, ale jedynie ją ukrywa, po kliknięciu
 		na odpowiedniego znajomego rozmowa jest przywracana. \\
 		Zielona ikona na liście kontaktów oznacza, że dana osoba jest dostępna, a szara, że nie jest dostępna \\ \\
-		Dane połączenia są odczytywane z pliku polaczenie.txt .
+		Dane połączenia (adres IP oraz port) są odczytywane z pliku \textit{polaczenie.txt}.
 	\subsection{Klient dla Android}
 		Po uruchomieniu aplikacji ukaże nam się ekran logowania. By ustawić parametry połączenia albo wyjść z programu
 		klikamy tu na przycisk menu i wybieramy interesującą nas opcję. By zarejestrować się wpisujemy hasło do pola "Hasło" 
