@@ -61,7 +61,7 @@ public class Kontakt implements Comparable, Serializable {
         final int EQUAL = 0;
         final int AFTER = 1;
         
-        if(this == kontakt) return EQUAL;
+        if(this.getId() == ((Kontakt) kontakt).getId()) return EQUAL;
         
         if(this.getId() < ((Kontakt) kontakt).getId()) return BEFORE;
         else if (this.getId() > ((Kontakt) kontakt).getId()) return AFTER;

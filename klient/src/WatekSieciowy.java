@@ -115,6 +115,9 @@ class WatekSieciowy implements Runnable
 
 	}
 
+	/**
+	 * Zamyka gniazdo po³¹czenia.
+	 */
 	public static void wylacz()
 	{
 		try
@@ -131,6 +134,10 @@ class WatekSieciowy implements Runnable
 		flaga = false;
 	}
 
+	/**
+	 * £¹czy siê z serwerem, tworzy bufor wejœciowy i inicjalizuje selektory, które
+	 * u¿ywane bêd¹ do odczytywania i wysy³ania wiadomoœci.
+	 */
 	public static void polacz()
 	{
 		try
@@ -170,6 +177,10 @@ class WatekSieciowy implements Runnable
 		}
 	}
 
+	/**
+	 * W przypadku nie powodzenia logowania/rejestracji albo albo zerwania po³¹czenia
+	 * odpowiednio reaguje.
+	 */
 	private static void bladWatku()
 	{
 		switch (WatekSieciowy.flagaCzynnosci)
@@ -201,6 +212,12 @@ class WatekSieciowy implements Runnable
 		}
 	}
 
+	/**
+	 * Zczytuje dane z bufore wejœciowego. Jeœli wyst¹pi³ b³¹d w odczycie to po³¹czenie zosta³o
+	 * zerwane i rzucany jest wyj¹tek. W przypadku poprawnego odczytania pocz¹tku wiadomoœci
+	 * wywo³uje funkcje zajmuj¹ce siê dalsz¹ czêœci¹ wiadomoœci oraz wys³aniem odpowiednich danych
+	 * do listy kontaktów i okna rozmów.
+	 */
 	private void odczytajDane()
 	{
 		try
@@ -265,6 +282,12 @@ class WatekSieciowy implements Runnable
 		}
 	}
 
+	/**
+	 * @param daneUzytkownika
+	 * @param haslo
+	 * @return
+	 * Wysy³a dane do logowania
+	 */
 	public static int zalogujSie(short daneUzytkownika, String haslo)
 	{
 		int dlugosc = 2 + haslo.getBytes().length + 1;
@@ -287,6 +310,10 @@ class WatekSieciowy implements Runnable
 			return wynikLogowania;
 	}
 
+	/**
+	 * @param haslo
+	 * Wysy³a dane do rejestracji.
+	 */
 	public static void zarejestrujSie(String haslo)
 	{
 		int dlugosc = haslo.getBytes().length + 1;
@@ -304,6 +331,12 @@ class WatekSieciowy implements Runnable
 		return wynikRejestracji;
 	}
 
+	/**
+	 * @param kod
+	 * @param dlugosc
+	 * Na podstawie kodu, zgodnie ze specyfikacj¹, rozpoznaje jaki to rodzaj wiadomoœci i
+	 * podejmuje w³aœciwe temu dzia³ania.
+	 */
 	private void przetworzTrescWiadomosci(int kod, int dlugosc)
 	{
 		switch (kod)
@@ -341,6 +374,10 @@ class WatekSieciowy implements Runnable
 		flagaCzynnosci = 0;
 	}
 
+	/**
+	 * @param dlugosc
+	 * Wczytuje dane dotycz¹ce dostêpnoœci znajomych.
+	 */
 	private void statusZwrotny(int dlugosc)
 	{
 		int idKontaktu;
@@ -362,6 +399,10 @@ class WatekSieciowy implements Runnable
 		WatekSieciowy.listaKontaktow.ustawStanyKontaktow(mapa);
 	}
 
+	/**
+	 * @param dlugosc
+	 * Odbiera wiadomosc.
+	 */
 	private void odebranieWiadomosci(int dlugosc)
 	{
 		String tresc;
@@ -371,6 +412,11 @@ class WatekSieciowy implements Runnable
 
 	}
 
+	/**
+	 * @param tresc
+	 * @param idKontaktu
+	 * Tworzy wiadomosc na podstawie istniejacych danych.
+	 */
 	private void utworzWiadomosc(String tresc, int idKontaktu)
 	{
 		Wiadomosc wiadomosc = new Wiadomosc();
@@ -380,6 +426,9 @@ class WatekSieciowy implements Runnable
 		odebraneWiadomosci.add(wiadomosc);
 	}
 
+	/**
+	 * Na podstawie ID wyszukuje nicki znajomych.
+	 */
 	private static void przypiszNazwyNadawcowDoWiadomosci()
 	{
 		for (Wiadomosc wiadomosc : odebraneWiadomosci)
@@ -390,6 +439,9 @@ class WatekSieciowy implements Runnable
 		}
 	}
 
+	/**
+	 * Przesyla odebrane wiadomoœci do okna rozmów.
+	 */
 	private static void przekazWiadomosci()
 	{
 		if (flagaOdbieraniaRozmow)
@@ -411,6 +463,10 @@ class WatekSieciowy implements Runnable
 		}
 	}
 
+	/**
+	 * Zarz¹dza wysy³aniem danych: odpytywanie stanu kontaktów i wiadomosci
+	 * nadane przez uzytkownika.
+	 */
 	private static void wyslijDane()
 	{
 		if (listaWiadomosci.size() > 0)
@@ -430,6 +486,9 @@ class WatekSieciowy implements Runnable
 		zakonczWpisywanie();
 	}
 
+	/**
+	 * Tworzy tresc zapytania o stan kontaktow.
+	 */
 	private static void wyslijZapytanieOStanKontaktow()
 	{
 		short tablica[] = WatekSieciowy.listaKontaktow.zwrocTabliceID();
@@ -443,6 +502,11 @@ class WatekSieciowy implements Runnable
 		}
 	}
 
+	/**
+	 * @param wiadomosc
+	 * Przygotowuje tresc pojedynczego komunikatu zawieraj¹cego wiadomosc u¿ytkownika
+	 * klienta.
+	 */
 	private static void wpiszWiadomoscNaWyjscie(Wiadomosc wiadomosc)
 	{
 		byte tresc[] = wiadomosc.zwrocTresc().getBytes();
@@ -454,6 +518,11 @@ class WatekSieciowy implements Runnable
 		wpiszString(wiadomosc.zwrocTresc());
 	}
 
+	/**
+	 * @param dlugosc
+	 * @return
+	 * Wczytuje tresc odebranej wiadomoœci od rozmówcy.
+	 */
 	private String wczytajTrescWiadomosci(int dlugosc)
 	{
 		char tablica[] = new char[dlugosc];
@@ -530,6 +599,10 @@ class WatekSieciowy implements Runnable
 		}
 	}
 
+	/**
+	 * Koñczy wpisywanie danych na bufor wyjœciowy, w przypadku ma³ego bufora
+	 * wysy³a dane a¿ do pustego bufora.
+	 */
 	private static void zakonczWpisywanie()
 	{
 		try
@@ -560,12 +633,20 @@ class WatekSieciowy implements Runnable
 		listaWiadomosci.add(wiadomosc);
 	}
 
+	/**
+	 * @param lista
+	 * Zg³oszenie listy kontaktow do odpytywania
+	 */
 	public static void zgloszenieDoOdpytywania(ListaKontaktow lista)
 	{
 		WatekSieciowy.listaKontaktow = lista;
 		flagaOdpytywaniaKontaktow = true;
 	}
 
+	/**
+	 * @param okno
+	 * Zg³oszenie okna rozmów do odbierania wiadomoœci
+	 */
 	public static void zgloszenieDoOdbieraniaWiadomosci(OknoRozmowy okno)
 	{
 		WatekSieciowy.oknoRozmowy = okno;

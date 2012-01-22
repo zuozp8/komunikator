@@ -62,7 +62,7 @@ public class GlowneOkno
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         /*
          * } });
@@ -70,7 +70,8 @@ public class GlowneOkno
     }
 
     /**
-     * Create the application.
+     * Konstrukotr przygotowuj¹cy aplikacjê. Inicjuje po³¹czenie sieciowe,
+     * zaczyna procedurê logowania/rejestracj, tworzy listê kontaktów i okno rozmów.
      */
     public GlowneOkno()
     {
@@ -85,7 +86,7 @@ public class GlowneOkno
     }
 
     /**
-     * Initialize the contents of the frame.
+     * W tej funkcji nastêpuje inicjalizacja niektórych elementów GUI jak menu
      */
     private void initialize()
     {
@@ -161,7 +162,7 @@ public class GlowneOkno
         });
         mnKontakty.add(mntmEdytujZnajomego);
 
-        JMenuItem mntmUsuZnajomego = new JMenuItem("UsuÅ„ znajomego");
+        JMenuItem mntmUsuZnajomego = new JMenuItem("Usuñ znajomego");
         mntmUsuZnajomego.addActionListener(new ActionListener()
         {
 
@@ -180,6 +181,9 @@ public class GlowneOkno
         mnKontakty.add(mntmArchiwum);*/
     }
 
+    /**
+     * Pobiera dane po³¹czenia(adres ip serwera i numer portu) z pliku tekstowego
+     */
     private void pobierzDanePolaczenia()
     {
         try
@@ -193,12 +197,16 @@ public class GlowneOkno
         }
         catch (Exception e)
         {
-            System.err.println("Error: " + e.getMessage());
+            //System.err.println("Error: " + e.getMessage());
             adres = "192.168.1.110";
             port = 4790;
         }
     }
 
+    /**
+     * @return
+     * Wczytuje listy znajomych z pliku
+     */
     private DefaultListModel wczytajDane()
     {
         try
@@ -214,11 +222,14 @@ public class GlowneOkno
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return new DefaultListModel();
     }
 
+    /**
+     * Zapisuje listê znajomych do pliku
+     */
     public void zapiszDane()
     {
         try
@@ -235,7 +246,7 @@ public class GlowneOkno
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+           // e.printStackTrace();
         }
     }
 
@@ -273,17 +284,11 @@ public class GlowneOkno
         watekWS = new Thread(wSiec);
         watekWS.start();
     }
-/*
-    private String pobierzAdres()
-    {
-        return oknoOpcji.zwrocAdresIP();
-    }
 
-    private int pobierzPort()
-    {
-        return oknoOpcji.zwrocNumerPortu();
-    }
-*/
+    /**
+     * Wywo³uje okno logowania, które bêdzie wyœwietlane do momentu
+     * poprawnego zalogowania albo przerwania po³¹czenia
+     */
     private void polaczZKontem()
     {
         int wynik = 0;
@@ -308,6 +313,12 @@ public class GlowneOkno
         }
     }
 
+    /**
+     * @param daneUzytkownika
+     * @param haslo
+     * @return
+     * Zarz¹dza procedur¹ logowania
+     */
     private int logowanie(final int daneUzytkownika, final String haslo)
     {
         int wynikLogowania = -1;
@@ -323,13 +334,17 @@ public class GlowneOkno
         }
         catch (InterruptedException e)
         {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         if(wynikLogowania == 0) bladLogowania();
         System.out.println(wynikLogowania);
         return wynikLogowania;
     }
 
+    /**
+     * @param haslo
+     * Zarz¹dza procesem rejestracji
+     */
     private void rejestracja(final String haslo)
     {
         int id = 0;
@@ -346,7 +361,7 @@ public class GlowneOkno
         }
         catch (InterruptedException e)
         {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         if (id > 0) poprawnaRejestracja(id);
         else bladRejestracji();
@@ -377,17 +392,6 @@ public class GlowneOkno
         "B³êdne logowanie.");
     }
 
-    /*protected void utworzOknoOpcji()
-    {
-        oknoOpcji = new OknoOpcji();
-        oknoOpcji.setVisible(false);
-    }
-
-    protected void otworzOknoOpcji()
-    {
-        oknoOpcji.setVisible(true);
-    }*/
-
     protected void bladUsuniecia()
     {
         JOptionPane.showMessageDialog(frame,
@@ -395,6 +399,10 @@ public class GlowneOkno
                 JOptionPane.ERROR_MESSAGE);
     }
 
+    /**
+     * @return
+     * Wyœwietla okno potwierdzenia czy chce usun¹c dany kontakt
+     */
     protected boolean czyChceszUsunac()
     {
         Object[] options = { "Tak", "Nie" };

@@ -6,6 +6,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
+/**
+ * @author Jan
+ * Klasa pomocnica s³u¿¹ca do wyœwietlania nicku oraz ikony dostêpnoœci w liœcie kontaków.
+ */
 class ZnajomiCellRenderer extends JLabel implements ListCellRenderer {
       private static final Color HIGHLIGHT_COLOR = new Color(0, 0, 128);
       private ImageIcon dost = new ImageIcon("dost1.gif");

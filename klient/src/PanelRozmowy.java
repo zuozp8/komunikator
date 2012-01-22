@@ -75,6 +75,9 @@ class PanelRozmowy extends JPanel
         });
 	}
 
+	/**
+	 * Dodaje panel rozmowy tzn. miejsce gdzie wyœwietlana bêdzie konwersacja.
+	 */
 	private void dodajPanelRozmowy()
 	{
 		poleRozmowy = new JTextPane();
@@ -82,6 +85,9 @@ class PanelRozmowy extends JPanel
 		panelRozmowy = new JScrollPane(poleRozmowy);
 	}
 
+	/**
+	 * Dodaje panel wiadomoœci tzn. miejsce wpisania wiadomoœci.
+	 */
 	private void dodajPanelWiadomosci()
 	{
 		poleWiadomosci = new JTextArea();
@@ -148,6 +154,9 @@ class PanelRozmowy extends JPanel
 		add(wyslij, c);
 	}
 
+	/**
+	 * Tworzy style które bêd¹ u¿ywane w polu rozmowy.
+	 */
 	private void utworzStyle()
 	{
 		doc = this.poleRozmowy.getStyledDocument();
@@ -163,6 +172,10 @@ class PanelRozmowy extends JPanel
         wyslijWiadomoscDoPolaRozmowy(wiadomosc.zwrocTresc(), true);
 	}
 
+	/**
+	 * Wysy³a wiadomosc u¿ytkownika klienta do jego rozmówcy, dodaje wiadomosc
+	 * do okna rozmowy i czysci pole z wpisan¹ wczesniej wiadomoscia.
+	 */
 	private void wyslijWiadomosc()
 	{
 		String wiadomosc = this.poleWiadomosci.getText();
@@ -178,6 +191,12 @@ class PanelRozmowy extends JPanel
 		this.poleWiadomosci.setText("");
 	}
 
+	/**
+	 * @param wiadomosc
+	 * @param przychodzaca
+	 * Dodaje tresc wiadomosci do pola rozmowy, jak rowniez przygotowuje nag³ówek czyli Nick
+	 * nadawcy i czas.
+	 */
 	private void wyslijWiadomoscDoPolaRozmowy(String wiadomosc, boolean przychodzaca)
 	{
 		try
@@ -187,10 +206,16 @@ class PanelRozmowy extends JPanel
 			doc.insertString(doc.getLength(), wiadomosc, this.regular);
 		}
 		catch (BadLocationException e) {
-		      e.printStackTrace(); //To change body of catch statement use File | Settings | File Templates.
+		     // e.printStackTrace(); //To change body of catch statement use File | Settings | File Templates.
 		}
 	}
 
+	/**
+	 * @param przychodzaca
+	 * @return
+	 * Tworzy nag³ówek wiadomoœci tzn. Nick nadawcy i czas dostarczenia(w przypadku przychodz¹cych)
+	 * lub nadania (w przypadku wychodz¹cych).
+	 */
 	private String stworzRozpoczecieWiadomosci(boolean przychodzaca)
 	{
 		String poczatek = new String();
