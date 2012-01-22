@@ -142,7 +142,7 @@ void login(int fd, string data) {
 			readBuffor[fd].clear();
 		}
 		uint16_t id = uint8_t(data[0])+uint8_t(data[1])*256;
-		if (pass.size()>id && string(data,2)==pass.at(id)) {
+		if (!connections.count(id) && pass.size()>id && string(data,2)==pass.at(id)) {
 			writeBuffor[fd].push_back(char(2));//Size of message
 			writeBuffor[fd].push_back(char(0));
 			writeBuffor[fd].push_back(char(2));//CODE
