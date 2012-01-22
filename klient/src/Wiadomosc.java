@@ -1,4 +1,8 @@
 
+/**
+ * @author Jan
+ * Reprezentuje pojedyñcz¹ wiadomoœæ przesy³an¹ w rozmowach.
+ */
 public class Wiadomosc implements Comparable
 {
     Kontakt odbiorca;

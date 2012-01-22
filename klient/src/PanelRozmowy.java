@@ -22,6 +22,10 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
 
+/**
+ * @author Jan
+ * Zarz¹dza pojedyñcz¹ rozmow¹, zawiera okno wpisywania wiadomoœci, okno rozmowy i przycisk wys³ania.
+ */
 class PanelRozmowy extends JPanel
 {
 	final int GRUBA = 1;

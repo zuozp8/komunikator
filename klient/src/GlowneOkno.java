@@ -35,7 +35,7 @@ public class GlowneOkno
     private ListaKontaktow listaKontaktow;
     private OknoRozmowy oknoRozmowy;
     WatekSieciowy wSiec;
-    private OknoOpcji oknoOpcji;
+    //private OknoOpcji oknoOpcji;
     private int wynikLogowania;
     private Thread watekWS;
     private boolean polaczenie = false;
@@ -76,7 +76,7 @@ public class GlowneOkno
     {
         initialize();
 
-        utworzOknoOpcji();
+        //utworzOknoOpcji();
         pobierzDanePolaczenia();
         utworzWatekSieciowy();
         polaczZKontem();
@@ -112,7 +112,7 @@ public class GlowneOkno
         mnRotlfmao.add(mntmZalogujSie);*/
 
         /*JMenuItem mntmZmienProfil = new JMenuItem("Zmien profil");
-        mnRotlfmao.add(mntmZmienProfil);*/
+        mnRotlfmao.add(mntmZmienProfil);
 
         JMenuItem mntmOpcje = new JMenuItem("Opcje");
         mntmOpcje.addActionListener(new ActionListener()
@@ -123,7 +123,7 @@ public class GlowneOkno
                 otworzOknoOpcji();
             }
         });
-        mnRotlfmao.add(mntmOpcje);
+        mnRotlfmao.add(mntmOpcje);*/
 
         JMenuItem mntmZamknij = new JMenuItem("Zamknij");
         mntmZamknij.addActionListener(new ActionListener()
@@ -377,7 +377,7 @@ public class GlowneOkno
         "B³êdne logowanie.");
     }
 
-    protected void utworzOknoOpcji()
+    /*protected void utworzOknoOpcji()
     {
         oknoOpcji = new OknoOpcji();
         oknoOpcji.setVisible(false);
@@ -386,7 +386,7 @@ public class GlowneOkno
     protected void otworzOknoOpcji()
     {
         oknoOpcji.setVisible(true);
-    }
+    }*/
 
     protected void bladUsuniecia()
     {

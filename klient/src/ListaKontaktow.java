@@ -18,6 +18,10 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.ListModel;
 
+/**
+ * @author Jan
+ * Przechowuje i wyœwietla listê kontaktów.
+ */
 public class ListaKontaktow extends JList implements MouseListener
 {
 
@@ -46,11 +50,20 @@ public class ListaKontaktow extends JList implements MouseListener
         this.setCellRenderer(znajomiCellRenderer);
     }
 
+    /**
+     * Lista kontaktów zg³aszaj¹ siê do W¹tekSieciowy, by co jakiœ czas sprawdza³
+     * dostêpnoœc znajomych na liœcie kontaków.
+     */
     private void zgloszenieDoOdpytywania()
     {
         WatekSieciowy.zgloszenieDoOdpytywania(this);
     }
 
+    /**
+     * @param mapa
+     * Funkcja wywo³ywana przez W¹tekSieciowy. Dziêki niej przesy³a siê aktualne wyniki
+     * dostêpnoœci znajomych.
+     */
     public void ustawStanyKontaktow(Map<Integer, Integer> mapa)
     {
         int licznik = 0;
@@ -65,6 +78,11 @@ public class ListaKontaktow extends JList implements MouseListener
         this.repaint();
     }
 
+    /**
+     * @param id
+     * @param status
+     * Ustawia status (dostêpny/niedostêpny) kontaktu o danym id.
+     */
     private void ustawStan(int id, Integer status)
     {
         Kontakt kontakt;
@@ -81,6 +99,11 @@ public class ListaKontaktow extends JList implements MouseListener
         }
     }
 
+    /**
+     * @param idKontaktu
+     * @return
+     * Zwraca nick kontaktu o podanym id.
+     */
     public String zwrocNick(int idKontaktu)
     {
         Kontakt kontakt;
@@ -105,6 +128,10 @@ public class ListaKontaktow extends JList implements MouseListener
         return kontakt;
     }
 
+    /**
+     * @param ostatecznyNick
+     * Zwraca nick kontaktu który jest zaznaczony na liœcie.
+     */
     public void zmienZaznaczonyNick(String ostatecznyNick)
     {
         int numer = this.getSelectedIndex();
@@ -126,12 +153,19 @@ public class ListaKontaktow extends JList implements MouseListener
         kontakty.add(rozmiar, osoba);
     }
 
+    /**
+     * Usuwa zaznaczony kontakt.
+     */
     public void usunKontakt()
     {
         int n = getSelectedIndex();
         kontakty.remove(n);
     }
 
+    /**
+     * @param id
+     * Usuwa z listy znajomych kontakt o podanym id.
+     */
     public void usunKontakt(int id)
     {
         for (int i = 0; i < kontakty.getSize(); i++)
@@ -149,6 +183,10 @@ public class ListaKontaktow extends JList implements MouseListener
         return kontakty;
     }
     
+    /**
+     * @return
+     * Zwraca w tablicy numery ID wszystkich kontaktów znajduj¹cych siê na liœcie.
+     */
     public short[] zwrocTabliceID()
     {
         short[] tablica = new short[kontakty.size()];

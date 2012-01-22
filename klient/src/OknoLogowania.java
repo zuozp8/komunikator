@@ -19,6 +19,10 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
+/**
+ * @author Jan
+ * Przyjmuje dane do logowania/rejestracji.
+ */
 public class OknoLogowania extends JDialog
 {
 
@@ -72,7 +76,7 @@ public class OknoLogowania extends JDialog
             }
         });
 
-        btnBrakLogowania = new JButton("Wyjd≈∫");
+        btnBrakLogowania = new JButton("Wyjdü");
         btnBrakLogowania.addActionListener(new ActionListener()
         {
 
@@ -129,7 +133,7 @@ public class OknoLogowania extends JDialog
         cs.gridwidth = 2;
         panel.add(poleId, cs);
 
-        lbHaslo = new JLabel("Has≈Ço: ");
+        lbHaslo = new JLabel("Has≥o: ");
         cs.weighty = 10;
         cs.gridx = 0;
         cs.gridy = 1;

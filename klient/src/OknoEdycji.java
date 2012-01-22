@@ -12,6 +12,10 @@ import javax.swing.JTextField;
 
 
 
+/**
+ * @author Jan
+ * Umo¿liwia zmianê nicku znajomego. 
+ */
 public class OknoEdycji extends JDialog
 {
     JButton btnEdytuj;

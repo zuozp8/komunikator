@@ -1,0 +1,32 @@
+# Ubuntu - podstawowe repozytoria
+deb http://pl.archive.ubuntu.com/ubuntu/ oneiric main restricted universe multiverse
+deb-src http://pl.archive.ubuntu.com/ubuntu/ oneiric main restricted universe multiverse
+deb http://pl.archive.ubuntu.com/ubuntu/ oneiric-updates main restricted universe multiverse
+deb-src http://pl.archive.ubuntu.com/ubuntu/ oneiric-updates main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu oneiric-security main restricted universe multiverse
+deb-src http://security.ubuntu.com/ubuntu oneiric-security main restricted universe multiverse
+deb http://extras.ubuntu.com/ubuntu oneiric main
+deb-src http://extras.ubuntu.com/ubuntu oneiric main
+deb http://pl.archive.ubuntu.com/ubuntu/ oneiric-backports main restricted universe multiverse
+deb-src http://pl.archive.ubuntu.com/ubuntu/ oneiric-backports main restricted universe multiverse
+
+# Ubuntu Partner
+deb http://archive.canonical.com/ubuntu oneiric partner
+# deb-src http://archive.canonical.com/ubuntu oneiric partner
+
+# Medibuntu
+deb http://packages.medibuntu.org/ oneiric free non-free
+# deb-src http://packages.medibuntu.org/ oneiric free non-free
+
+# GetDeb
+# deb http://archive.getdeb.net/ubuntu oneiric-getdeb apps games
+# poniewa¿ g³ówny serwer ostatnimi czasy nie dzia³a - tutaj mirror:
+deb http://mirrors.dotsrc.org/getdeb/ubuntu oneiric-getdeb apps games
+
+# Ubuntu Tweak - na razie brak dla 11.10
+# deb http://ppa.launchpad.net/tualatrix/ppa/ubuntu natty main
+# deb-src http://ppa.launchpad.net/tualatrix/ppa/ubuntu natty main
+
+# Wine
+deb http://ppa.launchpad.net/ubuntu-wine/ppa/ubuntu oneiric main
+# deb-src http://ppa.launchpad.net/ubuntu-wine/ppa/ubuntu oneiric main

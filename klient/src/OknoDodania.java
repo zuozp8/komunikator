@@ -5,6 +5,10 @@ import java.text.NumberFormat;
 import javax.swing.*;
 import javax.swing.border.*;
 
+/**
+ * @author Jan
+ * Klasa przyjmuj¹ca dane nowego kontaktu.
+ */
 public class OknoDodania extends JDialog {
 
     private JTextField poleNazwa;

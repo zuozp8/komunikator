@@ -29,6 +29,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 
+/**
+ * @author Jan
+ * Klasa zarz¹dzaj¹ca oknem z rozmowami.
+ */
 public class OknoRozmowy extends JFrame
 {
 	private JTabbedPane zbiorZakladek = new JTabbedPane();
@@ -46,12 +50,21 @@ public class OknoRozmowy extends JFrame
 		setVisible(false);
 		zgloszenieDoOdczytywaniaWiadomosci();
 	}
-
+	
+	/**
+	 * Funkcja u¿ywana do zg³oszenia chêci odbierania przez W¹tekSieciowy
+	 * wiadomoœci od innych u¿ytkowników przez serwer.
+	 */
 	private void zgloszenieDoOdczytywaniaWiadomosci()
     {
         WatekSieciowy.zgloszenieDoOdbieraniaWiadomosci(this);
     }
 
+	
+    /**
+     * @param osoba
+     * Dodaje rozmowê, o ile rozmowa z dan¹ osob¹ jeszcze nie istnieje
+     */
     public void dodajRozmowe(Kontakt osoba)
 	{
 		PanelRozmowy nowa = new PanelRozmowy(osoba, kontaktJA );
@@ -66,6 +79,13 @@ public class OknoRozmowy extends JFrame
 		setVisible(true);
 	}
 
+    
+    
+    /**
+     * @param osoba
+     * @return
+     * Ustawia kartê w której toczy siê rozmowa na wierzchu.
+     */
     public boolean ustawAktualnaRozmowa(Kontakt osoba)
 	{
 		int id = osoba.getId();
@@ -89,22 +109,10 @@ public class OknoRozmowy extends JFrame
 		}
 	}
 
-	private int szukajWUkrytychRozmowach(int id)
-	{
-		PanelRozmowy zakladka;
-		for (int i = 0; i < ukryteZakladki.getSize(); i++)
-		{
-			zakladka = (PanelRozmowy) ukryteZakladki.get(i);
-			//System.out.println(zakladka.zwrocId() + " " + id);
-			if (zakladka.zwrocId() == id)
-			{
-				//System.out.println(i);
-				return i;
-			}
-		}
-		return -1;
-	}
-
+    /**
+     * @param i
+     * Przywraca zak³adkê tzn. usuw¹ j¹ z listy ukrytych(zamkniêtych zak³adek) i dodaje jako now¹ kartê.
+     */
     private void przywrocZakladke(int i) {
         PanelRozmowy zakladka = (PanelRozmowy) ukryteZakladki.get(i);
         zbiorZakladek.addTab(zakladka.getRozmowcaNazwa(), zakladka);
@@ -114,6 +122,13 @@ public class OknoRozmowy extends JFrame
         ukryteZakladki.remove(i);
     }
 
+	/**
+	 * @param id
+	 * @return
+	 * Szuka w aktualnie otwartych rozmowach, takiej, która toczy siê z osob¹ o
+	 * podanym id. Jeœli znajdzie tak¹ to ustawia j¹ na wierzchu i zwraca wartosc
+	 * boolean odpowiedni¹ do powodzenia wyszukiwania.
+	 */
 	private boolean szukajWOtwartychRozmowach(int id)
 	{
 		PanelRozmowy zakladka;
@@ -131,6 +146,35 @@ public class OknoRozmowy extends JFrame
 		return false;
 	}
 
+    /**
+     * @param id
+     * @return
+     * Szuka w ukrytych tzn. zamkniêtych kartach rozmowy z osob¹ o podanym id.
+     * Jeœli znajdzie to zwraca numer zak³adki, w przeciwnym razie zwraca -1.
+     */
+    private int szukajWUkrytychRozmowach(int id)
+    {
+        PanelRozmowy zakladka;
+        for (int i = 0; i < ukryteZakladki.getSize(); i++)
+        {
+            zakladka = (PanelRozmowy) ukryteZakladki.get(i);
+            //System.out.println(zakladka.zwrocId() + " " + id);
+            if (zakladka.zwrocId() == id)
+            {
+                //System.out.println(i);
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * @param odebraneWiadomosci
+     * Funkcja ta wywo³ywana jest przez W¹tekSieciowy w celu przes³ania odebranych
+     * wiadomoœci. Nastêpnie wiadomoœci s¹ przypisywane do ka¿dej rozmowy, a w przypadku
+     * gdy nie rozpoczêto rozmowy z dan¹ osob¹, tworzona jest nowa zak³adka z odebranymi
+     * wiadomoœciami.
+     */
     public void odbierzWiadomosci(ArrayList<Wiadomosc> odebraneWiadomosci)
     {
         int polozenie;
@@ -180,6 +224,10 @@ public class OknoRozmowy extends JFrame
     }
 }
 
+/**
+ * @author Jan
+ * Ta klasa pomocnicza pozwoli³a na dodanie przycisków zamykaj¹cych dla ka¿dej zak³adki.
+ */
 class NaglowekZakladki extends JPanel {
     private final OknoRozmowy okno;
 

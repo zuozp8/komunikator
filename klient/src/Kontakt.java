@@ -1,6 +1,11 @@
 import java.io.Serializable;
 
 
+/**
+ * @author Jan
+ * Klasa przechowuj¹ca informacje o Kontakcie tzn. jego nick, id i aktualn¹ dostêpnoœæ.
+ * Przewowuje równie¿ informacjê czy toczy siê rozmowa z t¹ osob¹.
+ */
 public class Kontakt implements Comparable, Serializable {
 
 	private String nazwa;
