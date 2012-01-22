@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, KomunikatorAndroidActivity!</string>
+    <string name="app_name">Komunikator ROTLF</string>
+    <string name="dodanieKontaktu">Dodanie Kontaktu</string>
+    <string name="nowyKontakt">Nowy Kontakt</string>
+    <string name="bladDodania">Wystąpił błąd. Istnieje już w liście kontaktów osoba o podanym ID. Spróbuj z innymi danymi.</string>
+    <string name="bladUsuniecia">Aby usunąć kontakt konieczne jest zaznaczenie go przed usunięciem. Użyj trackballa.</string>
+    <string name="bladEdycji">Aby zedytować kontakt konieczne jest zaznaczenie go przed usunięciem. Użyj trackballa.</string>
+    <string name="usuniecieCzyNaPewno">Czy na pewno chcesz usunąć ten kontakt?</string>
+	<string name="poprawnaRejestracja">Udało ci się zarejestrować. Oto twoje id: </string>
+	<string name="bladRejestracji">Nieudana rejestracja. Spróbuj jeszcze raz. </string>
+	<string name="bladLogowania">Nieudane logowania. Spróbuj jeszcze raz. </string>
+	<string name="bladPolaczenia">Nie udało połączyć się z serwerem. Następuje zamknięcie aplikacji.</string>
+
+    <string-array name="pozycjeOknaWyboru">
+        <item>Rozmowa</item>
+        <item>Usuń</item>
+        <item>Edytuj</item>
+        <item>Wyjdź</item>
+    </string-array>
+
+</resources>

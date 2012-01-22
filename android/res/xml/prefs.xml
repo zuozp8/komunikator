@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <EditTextPreference
+        android:defaultValue="Ja"
+        android:key="name"
+        android:summary="Wpisz swoje imie"
+        android:title="Nick" >
+    </EditTextPreference>
+
+    <EditTextPreference
+        android:defaultValue="192.168.2.1"
+        android:key="ipaddress"
+        android:summary="Adres IP serwera"
+        android:title="IP" >
+    </EditTextPreference>
+
+    <EditTextPreference
+        android:defaultValue="4790"
+        android:key="port"
+        android:summary="Numer portu"
+        android:title="Port" >
+    </EditTextPreference>
+
+</PreferenceScreen>

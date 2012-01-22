@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/opcje"
+        android:alphabeticShortcut="o"
+        android:numericShortcut="1"
+        android:title="Opcje"></item>
+
+    <item
+        android:id="@+id/wyjscie"
+        android:alphabeticShortcut="w"
+        android:numericShortcut="9"
+        android:title="Wyjście"></item>
+
+</menu>

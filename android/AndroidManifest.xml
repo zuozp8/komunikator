@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="your.mojemojelol"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk android:minSdkVersion="8" />
+<uses-permission android:name="android.permission.INTERNET" />
+    
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name" >
+        <activity
+            android:label="@string/app_name"
+            android:name=".Logowanie" >
+            <intent-filter >
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name=".ListaKontaktow" >
+            <intent-filter >
+                <action android:name="your.mojemojelol.LISTAKONTAKTOW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:name=".OknoRozmow" >
+            <intent-filter >
+                <action android:name="your.mojemojelol.OKNOROZMOW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:label="Opcje"
+            android:name=".Opcje" >
+        </activity>
+        <activity
+            android:label="Dodawanie kontaktu"
+            android:name=".DodanieKontaktu" >
+        </activity>
+        <activity
+            android:label="Edycja kontaktu"
+            android:name=".EdycjaKontaktu" >
+        </activity>
+    </application>
+
+</manifest>

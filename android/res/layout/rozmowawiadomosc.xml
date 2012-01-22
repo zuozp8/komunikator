@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="15dp"
+    android:background="@drawable/obramowanierozmowa"
+    android:orientation="vertical"
+    android:paddingBottom="5px"
+    android:paddingLeft="5px"
+    android:paddingTop="5px" >
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/tvNick"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="Nick"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#00B2F3"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvCzas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Czas"
+            android:gravity="right"
+            android:textColor="#00B2F3"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvTekstWiadomosci"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="Wiadomosc"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#aaaaaF"
+        android:textStyle="normal" />
+
+</LinearLayout>
