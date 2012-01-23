@@ -10,7 +10,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -387,9 +390,17 @@ public class WatekSieciowy implements Runnable
 		Wiadomosc wiadomosc = new Wiadomosc();
 		wiadomosc.ustawTresc(tresc);
 		wiadomosc.setNadawca(new Kontakt("", idKontaktu));
-		wiadomosc.setData(tresc);
+		wiadomosc = ustawCzasWiadomosci(wiadomosc);
 		odebraneWiadomosci.add(wiadomosc);
-		dodajWiadomoscDoBazy(idKontaktu, mojeID, tresc, null);
+		dodajWiadomoscDoBazy(idKontaktu, mojeID, tresc, wiadomosc.zwrocCzas());
+	}
+
+	private Wiadomosc ustawCzasWiadomosci(Wiadomosc wiadomosc)
+	{
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		Calendar cal = Calendar.getInstance();
+		wiadomosc.setData(dateFormat.format(cal.getTime()));
+		return wiadomosc;
 	}
 
 	private void dodajWiadomoscDoBazy(int odKogo, int doKogo, String tresc,

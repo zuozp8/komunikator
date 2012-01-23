@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.format.Time;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -45,10 +46,10 @@ public class OknoRozmow extends Activity implements OnItemClickListener,
 
 		dodatkoweDane();
 		inicjalizacja();
-		if (savedInstanceState != null)
+		/*if (savedInstanceState != null)
 		{
 			this.onRestoreInstanceState(savedInstanceState);
-		}
+		}*/
 		przywrocDane();
 		zgloszenieDoOdbieraniaWiadomosci();
 	}
@@ -152,26 +153,14 @@ public class OknoRozmow extends Activity implements OnItemClickListener,
 		dane.close();
 	}
 
-
-/*	private void przykladoweWiadomosci()
-	{
-		dodajWiadomosc(kontaktJA, rozmowca);
-		dodajWiadomosc(kontaktJA, rozmowca);
-
-		ListView lvRozmowa2 = (ListView) findViewById(R.id.lvRozmowa2);
-		lvRozmowa2.setAdapter(new WiadomoscAdapter(this,
-				android.R.layout.simple_list_item_1, listaWiadomosci));
-
-	}
-*/
-
-
 	private void dodajWiadomosc(Kontakt zrodlo, Kontakt cel)
 	{
 		String tresc = this.etWpiszWiadomosc.getText().toString();
 		tresc.trim();
 		if(tresc.equals("") || tresc.matches(" +")) return;
-		String czas = DateFormat.getDateInstance().format(new Date());
+		
+		String czas = zwrocObecnyCzas();
+		
 		Wiadomosc wiadomosc = new Wiadomosc(zrodlo, tresc, czas);
 		this.listaWiadomosci.add(wiadomosc);
 		this.etWpiszWiadomosc.setText("");
@@ -193,13 +182,12 @@ public class OknoRozmow extends Activity implements OnItemClickListener,
             wiadomosc = odebraneWiadomosci.get(i);
             if(wiadomosc.getNadawca().getId() == rozmowca.getId()) odbierzWiadomoscOdRozmowcy(wiadomosc);
         }
-        //wiadomoscAdapter.notifyDataSetChanged();
     }
 
     private void odbierzWiadomoscOdRozmowcy(Wiadomosc wiadomosc)
     {
-        String czas = DateFormat.getDateInstance().format(new Date());
-        wiadomosc.setData(czas);
+        //String czas = zwrocObecnyCzas();
+        //wiadomosc.setData(czas);
         this.listaWiadomosci.add(wiadomosc);
     }
 

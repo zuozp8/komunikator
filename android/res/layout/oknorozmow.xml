@@ -43,8 +43,9 @@
             android:id="@+id/etWpiszWiadomosc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:hint="Wpisz tekst wiadomości"
+        	android:layout_weight="1"
+            android:minHeight="50dp"
             android:inputType="text" >
 
             <requestFocus />
@@ -54,6 +55,8 @@
             android:id="@+id/bWyslij"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+        	android:layout_weight="1"
+            android:minHeight="35dp"
             android:text="Wyślij" />
     </LinearLayout>
 
