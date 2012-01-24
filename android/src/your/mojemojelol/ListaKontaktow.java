@@ -486,7 +486,7 @@ public class ListaKontaktow extends Activity implements View.OnClickListener,
             if(flagaAktualizacjiStatusu > 0)
             {
             	userItemAdapter.notifyDataSetChanged();
-            	lvKontakty.refreshDrawableState();
+            	//lvKontakty.refreshDrawableState();
         		pokazWiadomosci();
             	flagaAktualizacjiStatusu = 0;
             }

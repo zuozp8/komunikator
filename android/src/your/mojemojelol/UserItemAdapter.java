@@ -59,6 +59,10 @@ public class UserItemAdapter extends ArrayAdapter<Kontakt> implements Serializab
 			{
 				ivOnline.setImageResource(R.drawable.dost);
 			}
+			else
+			{
+				ivOnline.setImageResource(R.drawable.niedost);
+			}
 		}
 	}
 }
