@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -152,7 +153,10 @@ public class WatekSieciowy implements Runnable
 
 			gniazdo = SocketChannel.open();
 			gniazdo.configureBlocking(false);
-			InetSocketAddress inAddress = new InetSocketAddress(adres, port);
+			
+			InetAddress inA = InetAddress.getByName(adres);
+			InetSocketAddress inAddress = new InetSocketAddress(inA.getHostAddress(), port);
+			
 			gniazdo.connect(inAddress);
 			while (!gniazdo.finishConnect())
 				;

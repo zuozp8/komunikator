@@ -97,7 +97,7 @@ public class GlowneOkno
         JMenuBar menuBar = new JMenuBar();
         frame.setJMenuBar(menuBar);
 
-        JMenu mnRotlfmao = new JMenu("ROTLFMAO");
+        JMenu mnRotlfmao = new JMenu("ROTLF");
         menuBar.add(mnRotlfmao);
 
         /*JMenuItem mntmZalogujSie = new JMenuItem("Zaloguj sie");
